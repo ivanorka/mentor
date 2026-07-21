@@ -1973,3 +1973,42 @@ h1 em, h2 em { color: var(--coral); font-weight: inherit; }
 .order-tutor strong, .order-details strong, .order-price strong,
 .order-includes p, .cancel-note strong { font-size: 15px; }
 .order-price .total strong { font-size: 28px; }
+
+/* Tutor discovery now follows the same calm product language as booking and profiles. */
+.search-page .marketing-header { min-height: 92px; border-bottom-color: #dfe5ef; }
+.search-page .marketing-nav a, .search-page .header-actions .text-link { font-size: 15px; }
+.search-page .header-actions .button-small { min-height: 46px; font-size: 15px; }
+.search-hero { padding-block: 52px; border-bottom: 1px solid #dfe5ef; background: linear-gradient(180deg, #fff 0%, #f3f7fc 100%); }
+.back-link { font-size: 14px; }
+.search-title-row { align-items: center; margin-top: 28px; }
+.search-title-row h1 { font-size: clamp(48px, 4.5vw, 66px); }
+.search-promise { max-width: 365px; padding: 18px; border-radius: 17px; }
+.search-promise strong { font-size: 15px; }
+.search-promise small { font-size: 13px; line-height: 1.55; }
+.search-bar-large { height: 64px; max-width: 760px; padding-inline: 20px; border-radius: 16px; }
+.search-bar-large input { font-size: 16px; }
+.search-layout { grid-template-columns: 280px 1fr; gap: 30px; padding-top: 42px; }
+.filters-panel { position: sticky; top: 20px; padding: 22px; border-radius: 18px; box-shadow: 0 12px 32px rgba(13,22,65,.05); }
+.filter-head strong { font-size: 17px; }
+.filter-block > label, .check-list label { font-size: 14px; }
+.filter-block select { height: 46px; font-size: 14px; }
+.range-values { font-size: 13px; }
+.filter-note strong { font-size: 13px; }
+.filter-note small { font-size: 12px; line-height: 1.5; }
+.results-head strong { font-size: 18px; }
+.results-head span, .results-head label, .results-head select { font-size: 14px; }
+.results-head select { height: 44px; }
+.active-filters button { font-size: 13px; }
+.search-card-grid { gap: 22px; }
+.search-card-grid .tutor-card { padding: 25px; border-radius: 18px; box-shadow: 0 8px 24px rgba(13,22,65,.04); }
+.search-card-grid .tutor-name-row h3 { font-size: 21px; }
+.search-card-grid .tutor-role { font-size: 14px; }
+.search-card-grid .tag { font-size: 12px; }
+.search-card-grid .tutor-quote { min-height: 70px; font-size: 15px; }
+.search-card-grid .reputation-row, .search-card-grid .availability-row { font-size: 13px; }
+.search-card-grid .availability-row > strong { font-size: 20px; }
+.search-card-grid .availability-row small { font-size: 12px; }
+.search-card-grid .card-link { height: 48px; font-size: 14px; }
+.search-help { margin-top: 28px; padding: 20px; border-radius: 17px; }
+.search-help strong { font-size: 15px; }
+.search-help small, .search-help a { font-size: 13px; }
