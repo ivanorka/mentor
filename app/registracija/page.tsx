@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, BookOpen, Check, Eye, EyeOff, GraduationCap, LoaderCircle, ShieldCheck, Sparkles } from "lucide-react";
@@ -11,7 +11,7 @@ type Role = "student" | "tutor";
 type Subject = { id: string; name: string; category: string };
 type AuthResult = { dashboard: string };
 
-export default function RegistrationPage() {
+function RegistrationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [step, setStep] = useState(1);
@@ -106,4 +106,8 @@ export default function RegistrationPage() {
       <span className="demo-admin">Već imaš račun? <Link href={`/prijava?role=${role}`}>Prijavi se</Link></span>
     </form></section>
   </div>;
+}
+
+export default function RegistrationPage() {
+  return <Suspense fallback={<div className="route-loading" role="status">Pripremamo registraciju…</div>}><RegistrationContent /></Suspense>;
 }

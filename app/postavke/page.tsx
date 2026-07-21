@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -18,7 +18,7 @@ function SettingToggle({ title, description, icon, enabled, onToggle }: { settin
   return <div className="setting-toggle">{icon}<span><strong>{title}</strong><small>{description}</small></span><button className={enabled ? "on" : "off"} onClick={onToggle} aria-pressed={enabled} aria-label={`${title}: ${enabled ? "uključeno" : "isključeno"}`}><i /></button></div>;
 }
 
-export default function SettingsPage() {
+function SettingsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get("tab");
@@ -57,4 +57,8 @@ export default function SettingsPage() {
       {error && <div className="auth-error">{error}</div>}{notice && <div className="settings-notice"><Check /> {notice}</div>}<div className="settings-footer"><button className="button button-coral" onClick={save} disabled={saving}>{saving ? <LoaderCircle className="spin" /> : <><Check /> Spremi promjene</>}</button><button className="logout-button" onClick={logout}><LogOut /> Odjavi se</button></div>
     </>}
   </section></main></div>;
+}
+
+export default function SettingsPage() {
+  return <Suspense fallback={<div className="route-loading" role="status">Učitavamo postavke…</div>}><SettingsContent /></Suspense>;
 }

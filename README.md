@@ -55,6 +55,12 @@ Next.js / React / Vinext     Go 1.26 / Gin
 
 Frontend ostaje kompatibilan s postojećim Cloudflare/Sites runtimeom. Go API izdaje neprozirnu sedmodnevnu sesiju u `HttpOnly`, `SameSite=Lax` kolačiću, lozinke štiti bcryptom i podržava Google OpenID Connect. Registrirani profili, bcrypt vjerodajnice i aktivne sesije trajno se zapisuju u ignorirane lokalne runtime datoteke te preživljavaju restart API-ja. Zaglavlje `X-Demo-User-ID` ostaje samo kao lokalni testni adapter.
 
+## Build i hosting
+
+- `npm run build` koristi službeni Next.js build i proizvodi `.next` za Netlify i njegov Next.js plugin.
+- `npm run build:vinext` zadržava Vinext/Cloudflare Sites build u `dist` direktoriju.
+- `npm run dev` pokreće standardni Next.js razvojni server; `npm run dev:vinext` ostaje dostupan za Sites razvoj.
+
 ## Dokumentacija
 
 - [`backend/README.md`](backend/README.md) — domenski model, poslovna pravila, demo auth, persistence i produkcijski put

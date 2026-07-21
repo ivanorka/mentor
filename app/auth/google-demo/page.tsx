@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, BookOpen, Check, GraduationCap, LoaderCircle, ShieldCheck } from "lucide-react";
@@ -9,7 +9,7 @@ import { apiFetch } from "../../lib/api";
 
 type Identity = { id: string; email: string; name: string; role: "student" | "tutor" | "admin" };
 type AuthResult = { dashboard: string };
-export default function GoogleDemoPage() {
+function GoogleDemoContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [identities, setIdentities] = useState<Identity[]>([]);
@@ -34,4 +34,8 @@ export default function GoogleDemoPage() {
     <div className="identity-list">{loading && identities.length === 0 ? <LoaderCircle className="spin" /> : visible.map((identity) => <button type="button" className={selectedEmail === identity.email ? "selected" : ""} onClick={() => setSelected(identity.email)} key={identity.id}><span>{identity.name.split(" ").map((part) => part[0]).join("").slice(0, 2)}</span><span><strong>{identity.name}</strong><small>{identity.email}</small></span>{selectedEmail === identity.email && <Check />}</button>)}</div>
     {error && <div className="auth-error">{error}</div>}<button className="button button-coral login-button" onClick={login} disabled={loading || !selectedEmail}>{loading && identities.length > 0 ? <LoaderCircle className="spin" /> : <>Nastavi <ArrowRight /></>}</button><Link className="back-auth-link" href="/prijava"><ArrowLeft /> Natrag na prijavu</Link>
   </section></main>;
+}
+
+export default function GoogleDemoPage() {
+  return <Suspense fallback={<div className="route-loading" role="status">Učitavamo Google prijavu…</div>}><GoogleDemoContent /></Suspense>;
 }

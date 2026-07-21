@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, BookOpen, Check, Eye, EyeOff, GraduationCap, LoaderCircle, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
@@ -14,7 +14,7 @@ const demoAccounts = {
   tutor: { email: "ana.kovac@example.test", password: "Gaudeamus2026!" },
 };
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedRole = searchParams.get("role") === "tutor" ? "tutor" : "student";
@@ -58,4 +58,8 @@ export default function LoginPage() {
       <span className="demo-admin">Nemaš račun? <Link href={`/registracija?role=${role}`}>Kreiraj besplatan račun</Link><br />Investitorski demo? <Link href="/admin">Otvori operativni pregled</Link></span>
     </form></section>
   </div>;
+}
+
+export default function LoginPage() {
+  return <Suspense fallback={<div className="route-loading" role="status">Pripremamo prijavu…</div>}><LoginContent /></Suspense>;
 }
