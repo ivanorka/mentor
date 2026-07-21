@@ -1948,3 +1948,28 @@ h1 em, h2 em { color: var(--coral); font-weight: inherit; }
 .booking-times button { font-size: 14px; }
 .form-label, .form-label input, .form-label textarea, .form-label select { font-size: 14px; }
 .form-label > small, .terms-check, .secure-copy { font-size: 12px; }
+
+/* Desktop booking presentation scale: the header, progress rail and order
+   summary must remain comfortably readable in an investor demo from a distance. */
+.booking-header { min-height: 88px; }
+.booking-header > a:nth-child(2), .booking-header > span { font-size: 16px; gap: 9px; }
+.booking-header > a:nth-child(2) svg, .booking-header > span svg { width: 20px; height: 20px; }
+.booking-stepper { height: 86px; }
+.booking-stepper span { font-size: 16px; gap: 10px; }
+.booking-stepper span i { width: 34px; height: 34px; font-size: 14px; }
+.booking-stepper b { width: 78px; margin-inline: 13px; }
+.booking-step-content > h1, .booking-success h1 { font-size: 42px; }
+.booking-step-content > p, .booking-success > p { font-size: 17px; }
+.booking-step-content .step-kicker { font-size: 13px; }
+.booking-day-grid button { min-height: 122px; }
+.booking-day-grid button small, .booking-day-grid button span { font-size: 13px; }
+.booking-day-grid button strong { font-size: 25px; }
+.booking-times > label { font-size: 16px; }
+.booking-times button { min-height: 68px; font-size: 17px; }
+.booking-times button small { font-size: 13px; }
+.booking-order { font-size: 15px; }
+.order-tutor small, .order-tutor em, .order-details span, .order-price span,
+.order-includes > strong, .cancel-note small { font-size: 14px; }
+.order-tutor strong, .order-details strong, .order-price strong,
+.order-includes p, .cancel-note strong { font-size: 15px; }
+.order-price .total strong { font-size: 28px; }
