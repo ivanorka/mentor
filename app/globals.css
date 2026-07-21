@@ -1924,3 +1924,27 @@ h1 em, h2 em { color: var(--coral); font-weight: inherit; }
 .search-page .tutor-card :is(.tutor-role, .tutor-quote), .profile-page .profile-role-large,
 .profile-page .profile-quote-large, .subjects-page .subject-catalog-grid p,
 .login-page .login-card > p, .standalone-auth .login-card > p { font-size: 14px; }
+
+/* Booking and tutor-profile final readability pass. */
+.profile-breadcrumb, .profile-kicker span, .profile-metric-grid span,
+.profile-language-row strong, .profile-language-row span, .profile-tabs a { font-size: 12px; }
+.profile-section > p { font-size: 15px; line-height: 1.75; }
+.profile-section .method-grid h3, .reviews-summary small, .rating-bars span,
+.review-grid strong, .review-grid span, .credential-list strong, .credential-list small { font-size: 13px; }
+.booking-sticky { font-size: 14px; }
+.booking-price span, .availability-live, .calendar-head strong,
+.profile-on-request strong, .profile-on-request small, .booking-trust p { font-size: 13px; }
+.booking-price strong { font-size: 28px; }
+.day-row button, .time-row button { font-size: 13px; min-height: 40px; }
+.day-row small { font-size: 11px; }
+.booking-main-button { font-size: 14px; min-height: 46px; }
+.booking-header > a:nth-child(2), .booking-header > span, .booking-stepper span,
+.booking-step-content > p, .booking-success > p, .booking-times > label { font-size: 13px; }
+.booking-day-grid button small, .booking-day-grid button span, .booking-times button small,
+.booking-order small, .order-tutor small, .order-tutor em, .order-details span,
+.order-details strong, .order-price span, .order-price strong, .order-includes > strong,
+.order-includes p, .cancel-note strong, .cancel-note small, .success-summary small,
+.success-summary strong, .ai-prep-note strong, .ai-prep-note small { font-size: 12px; }
+.booking-times button { font-size: 14px; }
+.form-label, .form-label input, .form-label textarea, .form-label select { font-size: 14px; }
+.form-label > small, .terms-check, .secure-copy { font-size: 12px; }
