@@ -32,6 +32,61 @@ func TestHealthAndTutorSearch(t *testing.T) {
 	}
 }
 
+func TestEducationLevelsMetaAndCanonicalLevelSearch(t *testing.T) {
+	router := testRouter(t)
+	for _, path := range []string{"/api/v1/education-levels", "/api/v1/meta", "/api/v1/tutors?level=srednja-skola"} {
+		request := httptest.NewRequest(http.MethodGet, path, nil)
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+		if response.Code != http.StatusOK {
+			t.Fatalf("%s returned %d: %s", path, response.Code, response.Body.String())
+		}
+		if path == "/api/v1/education-levels" && !bytes.Contains(response.Body.Bytes(), []byte(`"id":"srednja-skola"`)) {
+			t.Fatalf("education levels missing canonical default: %s", response.Body.String())
+		}
+		if path == "/api/v1/meta" && !bytes.Contains(response.Body.Bytes(), []byte(`"defaultEducationLevelId":"srednja-skola"`)) {
+			t.Fatalf("meta missing default education level: %s", response.Body.String())
+		}
+	}
+}
+
+func TestTutorSearchRejectsUnsafeQueryParameters(t *testing.T) {
+	router := testRouter(t)
+	for _, path := range []string{
+		"/api/v1/tutors?offset=-1",
+		"/api/v1/tutors?limit=0",
+		"/api/v1/tutors?limit=101",
+		"/api/v1/tutors?minPrice=nope",
+		"/api/v1/tutors?minPrice=25&maxPrice=20",
+		"/api/v1/tutors?verified=maybe",
+		"/api/v1/tutors?level=nepoznata-razina",
+	} {
+		request := httptest.NewRequest(http.MethodGet, path, nil)
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+		if response.Code != http.StatusUnprocessableEntity {
+			t.Errorf("%s returned %d, expected 422: %s", path, response.Code, response.Body.String())
+		}
+	}
+}
+
+func TestGoogleStartCarriesRequestedTutorRole(t *testing.T) {
+	router := testRouter(t)
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/auth/google/start?returnTo=%2Fprofesor&role=tutor", nil)
+	response := httptest.NewRecorder()
+	router.ServeHTTP(response, request)
+	if response.Code != http.StatusTemporaryRedirect || response.Header().Get("Location") != "/auth/google-demo?returnTo=%2Fprofesor&role=tutor" {
+		t.Fatalf("unexpected tutor Google redirect: %d %q", response.Code, response.Header().Get("Location"))
+	}
+
+	invalidRequest := httptest.NewRequest(http.MethodGet, "/api/v1/auth/google/start?role=admin", nil)
+	invalidResponse := httptest.NewRecorder()
+	router.ServeHTTP(invalidResponse, invalidRequest)
+	if invalidResponse.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("invalid Google role returned %d: %s", invalidResponse.Code, invalidResponse.Body.String())
+	}
+}
+
 func TestProtectedRouteRequiresDemoIdentity(t *testing.T) {
 	router := testRouter(t)
 	request := httptest.NewRequest(http.MethodGet, "/api/v1/bookings", nil)

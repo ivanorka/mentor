@@ -23,6 +23,16 @@ type User struct {
 	CreatedAt     time.Time `json:"createdAt"`
 }
 
+const DefaultEducationLevelID = "srednja-skola"
+
+type EducationLevel struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	SortOrder   int    `json:"sortOrder"`
+	IsDefault   bool   `json:"isDefault"`
+}
+
 type Subject struct {
 	ID          string   `json:"id"`
 	Slug        string   `json:"slug"`
@@ -211,17 +221,18 @@ type Payment struct {
 }
 
 type SeedData struct {
-	Users         []User             `json:"users"`
-	Subjects      []Subject          `json:"subjects"`
-	Tutors        []TutorProfile     `json:"tutors"`
-	Students      []StudentProfile   `json:"students"`
-	Availability  []AvailabilitySlot `json:"availability"`
-	Bookings      []Booking          `json:"bookings"`
-	Lessons       []Lesson           `json:"lessons"`
-	Reviews       []Review           `json:"reviews"`
-	Conversations []Conversation     `json:"conversations"`
-	Messages      []Message          `json:"messages"`
-	LearningPacks []LearningPack     `json:"learningPacks"`
-	TrustEvents   []TrustEvent       `json:"trustEvents"`
-	Payments      []Payment          `json:"payments"`
+	EducationLevels []EducationLevel   `json:"educationLevels"`
+	Users           []User             `json:"users"`
+	Subjects        []Subject          `json:"subjects"`
+	Tutors          []TutorProfile     `json:"tutors"`
+	Students        []StudentProfile   `json:"students"`
+	Availability    []AvailabilitySlot `json:"availability"`
+	Bookings        []Booking          `json:"bookings"`
+	Lessons         []Lesson           `json:"lessons"`
+	Reviews         []Review           `json:"reviews"`
+	Conversations   []Conversation     `json:"conversations"`
+	Messages        []Message          `json:"messages"`
+	LearningPacks   []LearningPack     `json:"learningPacks"`
+	TrustEvents     []TrustEvent       `json:"trustEvents"`
+	Payments        []Payment          `json:"payments"`
 }

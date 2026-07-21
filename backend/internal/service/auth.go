@@ -41,6 +41,7 @@ type session struct {
 type oauthState struct {
 	Nonce     string
 	ReturnTo  string
+	Role      domain.Role
 	ExpiresAt time.Time
 }
 
@@ -62,6 +63,7 @@ type RegisterInput struct {
 	Headline      string      `json:"headline"`
 	Bio           string      `json:"bio"`
 	SubjectIDs    []string    `json:"subjectIds"`
+	Levels        []string    `json:"levels"`
 	PriceEUR      float64     `json:"priceEur"`
 }
 
@@ -147,13 +149,36 @@ func (s *Service) Register(input RegisterInput) (AuthResult, error) {
 		if input.PriceEUR < 10 || input.PriceEUR > 100 {
 			return AuthResult{}, validation("Cijena sata mora biti između 10 i 100 €.")
 		}
+		requestedLevels := input.Levels
+		if len(requestedLevels) == 0 {
+			requestedLevels = []string{domain.DefaultEducationLevelID}
+		}
+		levelNames := make([]string, 0, len(requestedLevels))
+		for _, requested := range requestedLevels {
+			level, levelErr := s.store.EducationLevel(strings.TrimSpace(requested))
+			if levelErr != nil {
+				return AuthResult{}, validation("Odabrana je nepoznata razina obrazovanja.")
+			}
+			if !containsFold(levelNames, level.Name) {
+				levelNames = append(levelNames, level.Name)
+			}
+		}
 		offerings := make([]domain.TutorSubject, 0, len(input.SubjectIDs))
 		for _, subjectID := range input.SubjectIDs {
 			subject, subjectErr := s.store.Subject(subjectID)
 			if subjectErr != nil {
 				return AuthResult{}, validation("Odabran je nepoznat predmet.")
 			}
-			offerings = append(offerings, domain.TutorSubject{SubjectID: subject.ID, PriceEUR: input.PriceEUR, Levels: subject.Levels})
+			offeringLevels := make([]string, 0, len(levelNames))
+			for _, levelName := range levelNames {
+				if containsFold(subject.Levels, levelName) {
+					offeringLevels = append(offeringLevels, levelName)
+				}
+			}
+			if len(offeringLevels) == 0 {
+				return AuthResult{}, validation("Odabrana razina nije dostupna za predmet " + subject.Name + ".")
+			}
+			offerings = append(offerings, domain.TutorSubject{SubjectID: subject.ID, PriceEUR: input.PriceEUR, Levels: offeringLevels})
 		}
 		tutor = &domain.TutorProfile{UserID: userID, Slug: slugify(name) + "-" + strings.ToLower(identifier[:4]), Headline: strings.TrimSpace(input.Headline), Bio: strings.TrimSpace(input.Bio), Subjects: offerings, Languages: []string{"Hrvatski"}, Badge: "Novi mentor", Verified: false, ResponseMinutes: 60, ReputationScore: 50}
 	}
@@ -240,7 +265,14 @@ func (s *Service) createSession(user domain.User) (AuthResult, error) {
 	return AuthResult{User: user, Token: raw, ExpiresAt: expires, Dashboard: dashboardFor(user.Role)}, nil
 }
 
-func (s *Service) NewGoogleAuthorization(config GoogleOAuthConfig, returnTo string) (string, error) {
+func (s *Service) NewGoogleAuthorization(config GoogleOAuthConfig, returnTo string, requestedRoles ...domain.Role) (string, error) {
+	requestedRole := domain.RoleStudent
+	if len(requestedRoles) > 0 {
+		requestedRole = requestedRoles[0]
+	}
+	if requestedRole != domain.RoleStudent && requestedRole != domain.RoleTutor {
+		return "", validation("Google registracija podržava samo učenika ili profesora.")
+	}
 	state, err := randomToken(32)
 	if err != nil {
 		return "", err
@@ -250,7 +282,7 @@ func (s *Service) NewGoogleAuthorization(config GoogleOAuthConfig, returnTo stri
 		return "", err
 	}
 	s.authMu.Lock()
-	s.oauthStates[tokenHash(state)] = oauthState{Nonce: nonce, ReturnTo: sanitizeReturnTo(returnTo), ExpiresAt: s.now().Add(10 * time.Minute)}
+	s.oauthStates[tokenHash(state)] = oauthState{Nonce: nonce, ReturnTo: sanitizeReturnTo(returnTo), Role: requestedRole, ExpiresAt: s.now().Add(10 * time.Minute)}
 	s.authMu.Unlock()
 	values := url.Values{"client_id": {config.ClientID}, "redirect_uri": {config.RedirectURL}, "response_type": {"code"}, "scope": {"openid email profile"}, "state": {state}, "nonce": {nonce}, "prompt": {"select_account"}, "include_granted_scopes": {"true"}}
 	return "https://accounts.google.com/o/oauth2/v2/auth?" + values.Encode(), nil
@@ -268,7 +300,7 @@ func (s *Service) CompleteGoogleAuthorization(ctx context.Context, config Google
 	if !identity.EmailVerified || !validEmail(identity.Email) {
 		return AuthResult{}, stored.ReturnTo, forbidden("Google e-mail nije potvrđen.")
 	}
-	result, err := s.loginGoogleIdentity(identity)
+	result, err := s.loginGoogleIdentity(identity, stored.Role)
 	return result, stored.ReturnTo, err
 }
 
@@ -297,17 +329,26 @@ func (s *Service) consumeOAuthState(raw string) (oauthState, error) {
 	return stored, nil
 }
 
-func (s *Service) loginGoogleIdentity(identity GoogleIdentity) (AuthResult, error) {
+func (s *Service) loginGoogleIdentity(identity GoogleIdentity, requestedRole domain.Role) (AuthResult, error) {
 	email := strings.ToLower(identity.Email)
 	user, err := s.store.UserByEmail(email)
 	if errors.Is(err, store.ErrNotFound) {
+		if requestedRole != domain.RoleStudent && requestedRole != domain.RoleTutor {
+			requestedRole = domain.RoleStudent
+		}
 		identifier, tokenErr := randomToken(8)
 		if tokenErr != nil {
 			return AuthResult{}, tokenErr
 		}
-		user = domain.User{ID: "student-" + strings.ToLower(identifier[:10]), Email: email, Name: strings.TrimSpace(identity.Name), Role: domain.RoleStudent, AvatarURL: identity.Picture, Status: "active", Locale: "hr-HR", EmailVerified: true, AuthProvider: "google", CreatedAt: s.now()}
-		profile := &domain.StudentProfile{UserID: user.ID, Goals: []string{"Postaviti prvi cilj učenja"}, Preferences: []string{"Personalizirano objašnjenje"}, Mastery: []domain.TopicMastery{}}
-		if createErr := s.store.CreateAccount(user, profile, nil); createErr != nil {
+		user = domain.User{ID: string(requestedRole) + "-" + strings.ToLower(identifier[:10]), Email: email, Name: strings.TrimSpace(identity.Name), Role: requestedRole, AvatarURL: identity.Picture, Status: "active", Locale: "hr-HR", EmailVerified: true, AuthProvider: "google", CreatedAt: s.now()}
+		var student *domain.StudentProfile
+		var tutor *domain.TutorProfile
+		if requestedRole == domain.RoleTutor {
+			tutor = &domain.TutorProfile{UserID: user.ID, Slug: slugify(user.Name) + "-" + strings.ToLower(identifier[:4]), Languages: []string{"Hrvatski"}, Badge: "Novi mentor", ResponseMinutes: 60, ReputationScore: 50}
+		} else {
+			student = &domain.StudentProfile{UserID: user.ID, Goals: []string{"Postaviti prvi cilj učenja"}, Preferences: []string{"Personalizirano objašnjenje"}, Mastery: []domain.TopicMastery{}}
+		}
+		if createErr := s.store.CreateAccount(user, student, tutor); createErr != nil {
 			return AuthResult{}, createErr
 		}
 	} else if err != nil {

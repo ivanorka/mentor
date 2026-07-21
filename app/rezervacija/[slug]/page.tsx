@@ -44,8 +44,18 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
   useEffect(() => {
     Promise.all([apiFetch<Tutor>(`/tutors/${slug}`), apiFetch<Slot[]>(`/tutors/${slug}/availability?status=open`)])
       .then(([tutorResult, slotResult]) => {
-        setTutor(tutorResult.data); setSlots(slotResult.data); setSubjectId(tutorResult.data.subjects[0]?.subjectId || "");
-        if (slotResult.data[0]) { setSelectedDay(dateKey(new Date(slotResult.data[0].startsAt))); setSelectedSlotId(slotResult.data[0].id); }
+        const query = new URLSearchParams(window.location.search);
+        const requestedSubject = query.get("subject");
+        const requestedSlot = query.get("slot");
+        const selectedSubject = tutorResult.data.subjects.some((item) => item.subjectId === requestedSubject)
+          ? requestedSubject!
+          : tutorResult.data.subjects[0]?.subjectId || "";
+        const selectedAvailability = slotResult.data.find((item) => item.id === requestedSlot) ?? slotResult.data[0];
+        setTutor(tutorResult.data); setSlots(slotResult.data); setSubjectId(selectedSubject);
+        if (selectedAvailability) {
+          setSelectedDay(dateKey(new Date(selectedAvailability.startsAt)));
+          setSelectedSlotId(selectedAvailability.id);
+        }
       })
       .catch((caught) => setError(caught instanceof Error ? caught.message : "Profil se ne može učitati."))
       .finally(() => setLoading(false));

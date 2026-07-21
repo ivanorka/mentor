@@ -17,23 +17,24 @@ import (
 var ErrNotFound = errors.New("resource not found")
 
 type Store struct {
-	mu            sync.RWMutex
-	seedUserIDs   map[string]bool
-	users         map[string]domain.User
-	subjects      map[string]domain.Subject
-	tutors        map[string]domain.TutorProfile
-	students      map[string]domain.StudentProfile
-	availability  map[string]domain.AvailabilitySlot
-	bookings      map[string]domain.Booking
-	lessons       map[string]domain.Lesson
-	reviews       map[string]domain.Review
-	conversations map[string]domain.Conversation
-	messages      map[string]domain.Message
-	learningPacks map[string]domain.LearningPack
-	trustEvents   map[string]domain.TrustEvent
-	payments      map[string]domain.Payment
-	sequence      uint64
-	snapshotPath  string
+	mu              sync.RWMutex
+	seedUserIDs     map[string]bool
+	educationLevels map[string]domain.EducationLevel
+	users           map[string]domain.User
+	subjects        map[string]domain.Subject
+	tutors          map[string]domain.TutorProfile
+	students        map[string]domain.StudentProfile
+	availability    map[string]domain.AvailabilitySlot
+	bookings        map[string]domain.Booking
+	lessons         map[string]domain.Lesson
+	reviews         map[string]domain.Review
+	conversations   map[string]domain.Conversation
+	messages        map[string]domain.Message
+	learningPacks   map[string]domain.LearningPack
+	trustEvents     map[string]domain.TrustEvent
+	payments        map[string]domain.Payment
+	sequence        uint64
+	snapshotPath    string
 }
 
 func Load(seedPath, snapshotPath string) (*Store, error) {
@@ -45,37 +46,46 @@ func Load(seedPath, snapshotPath string) (*Store, error) {
 	if err := json.Unmarshal(data, &seed); err != nil {
 		return nil, fmt.Errorf("decode seed data: %w", err)
 	}
+	if len(seed.EducationLevels) == 0 {
+		seed.EducationLevels = canonicalEducationLevels()
+	}
 	seedUserIDs := make(map[string]bool, len(seed.Users))
 	for _, value := range seed.Users {
 		seedUserIDs[value.ID] = true
 	}
 	if snapshotPath != "" {
 		if snapshot, readErr := os.ReadFile(snapshotPath); readErr == nil {
-			if err := json.Unmarshal(snapshot, &seed); err != nil {
+			var runtime domain.SeedData
+			if err := json.Unmarshal(snapshot, &runtime); err != nil {
 				return nil, fmt.Errorf("decode runtime snapshot: %w", err)
 			}
+			seed = mergeSeedData(seed, runtime)
 		} else if !errors.Is(readErr, os.ErrNotExist) {
 			return nil, fmt.Errorf("read runtime snapshot: %w", readErr)
 		}
 	}
 
 	s := &Store{
-		seedUserIDs:   seedUserIDs,
-		users:         make(map[string]domain.User),
-		subjects:      make(map[string]domain.Subject),
-		tutors:        make(map[string]domain.TutorProfile),
-		students:      make(map[string]domain.StudentProfile),
-		availability:  make(map[string]domain.AvailabilitySlot),
-		bookings:      make(map[string]domain.Booking),
-		lessons:       make(map[string]domain.Lesson),
-		reviews:       make(map[string]domain.Review),
-		conversations: make(map[string]domain.Conversation),
-		messages:      make(map[string]domain.Message),
-		learningPacks: make(map[string]domain.LearningPack),
-		trustEvents:   make(map[string]domain.TrustEvent),
-		payments:      make(map[string]domain.Payment),
-		sequence:      1000,
-		snapshotPath:  snapshotPath,
+		seedUserIDs:     seedUserIDs,
+		educationLevels: make(map[string]domain.EducationLevel),
+		users:           make(map[string]domain.User),
+		subjects:        make(map[string]domain.Subject),
+		tutors:          make(map[string]domain.TutorProfile),
+		students:        make(map[string]domain.StudentProfile),
+		availability:    make(map[string]domain.AvailabilitySlot),
+		bookings:        make(map[string]domain.Booking),
+		lessons:         make(map[string]domain.Lesson),
+		reviews:         make(map[string]domain.Review),
+		conversations:   make(map[string]domain.Conversation),
+		messages:        make(map[string]domain.Message),
+		learningPacks:   make(map[string]domain.LearningPack),
+		trustEvents:     make(map[string]domain.TrustEvent),
+		payments:        make(map[string]domain.Payment),
+		sequence:        1000,
+		snapshotPath:    snapshotPath,
+	}
+	for _, value := range seed.EducationLevels {
+		s.educationLevels[value.ID] = value
 	}
 	for _, value := range seed.Users {
 		if value.AuthProvider == "" {
@@ -135,6 +145,60 @@ func Load(seedPath, snapshotPath string) (*Store, error) {
 	}
 	s.recalculateSequence()
 	return s, nil
+}
+
+func canonicalEducationLevels() []domain.EducationLevel {
+	return []domain.EducationLevel{
+		{ID: "osnovna-skola", Name: "Osnovna škola", Description: "Instrukcije za učenike osnovne škole.", SortOrder: 10},
+		{ID: domain.DefaultEducationLevelID, Name: "Srednja škola", Description: "Gimnazijski i strukovni srednjoškolski programi.", SortOrder: 20, IsDefault: true},
+		{ID: "matura", Name: "Matura", Description: "Ciljana priprema za državnu maturu.", SortOrder: 30},
+		{ID: "fakultet", Name: "Fakultet", Description: "Kolegiji i ispiti visokog obrazovanja.", SortOrder: 40},
+		{ID: "odrasli", Name: "Odrasli", Description: "Profesionalno usavršavanje i cjeloživotno učenje.", SortOrder: 50},
+	}
+}
+
+func mergeSeedData(seed, runtime domain.SeedData) domain.SeedData {
+	seed.EducationLevels = mergeValues(seed.EducationLevels, runtime.EducationLevels, func(value domain.EducationLevel) string { return value.ID }, false)
+	seed.Subjects = mergeValues(seed.Subjects, runtime.Subjects, func(value domain.Subject) string { return value.ID }, false)
+	seed.Users = mergeValues(seed.Users, runtime.Users, func(value domain.User) string { return value.ID }, true)
+	seed.Tutors = mergeValues(seed.Tutors, runtime.Tutors, func(value domain.TutorProfile) string { return value.UserID }, true)
+	seed.Students = mergeValues(seed.Students, runtime.Students, func(value domain.StudentProfile) string { return value.UserID }, true)
+	seed.Availability = mergeValues(seed.Availability, runtime.Availability, func(value domain.AvailabilitySlot) string { return value.ID }, true)
+	seed.Bookings = mergeValues(seed.Bookings, runtime.Bookings, func(value domain.Booking) string { return value.ID }, true)
+	seed.Lessons = mergeValues(seed.Lessons, runtime.Lessons, func(value domain.Lesson) string { return value.ID }, true)
+	seed.Reviews = mergeValues(seed.Reviews, runtime.Reviews, func(value domain.Review) string { return value.ID }, true)
+	seed.Conversations = mergeValues(seed.Conversations, runtime.Conversations, func(value domain.Conversation) string { return value.ID }, true)
+	seed.Messages = mergeValues(seed.Messages, runtime.Messages, func(value domain.Message) string { return value.ID }, true)
+	seed.LearningPacks = mergeValues(seed.LearningPacks, runtime.LearningPacks, func(value domain.LearningPack) string { return value.ID }, true)
+	seed.TrustEvents = mergeValues(seed.TrustEvents, runtime.TrustEvents, func(value domain.TrustEvent) string { return value.ID }, true)
+	seed.Payments = mergeValues(seed.Payments, runtime.Payments, func(value domain.Payment) string { return value.ID }, true)
+	return seed
+}
+
+func mergeValues[T any](seed, runtime []T, key func(T) string, preferRuntime bool) []T {
+	values := make(map[string]T, len(seed)+len(runtime))
+	order := make([]string, 0, len(seed)+len(runtime))
+	for _, value := range seed {
+		id := key(value)
+		if _, exists := values[id]; !exists {
+			order = append(order, id)
+		}
+		values[id] = value
+	}
+	for _, value := range runtime {
+		id := key(value)
+		if _, exists := values[id]; !exists {
+			order = append(order, id)
+			values[id] = value
+		} else if preferRuntime {
+			values[id] = value
+		}
+	}
+	merged := make([]T, 0, len(order))
+	for _, id := range order {
+		merged = append(merged, values[id])
+	}
+	return merged
 }
 
 func (s *Store) recalculateSequence() {
@@ -261,6 +325,36 @@ func (s *Store) SeedUsers() []domain.User {
 	return values
 }
 
+func (s *Store) EducationLevel(idOrName string) (domain.EducationLevel, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	if value, ok := s.educationLevels[idOrName]; ok {
+		return value, nil
+	}
+	for _, value := range s.educationLevels {
+		if strings.EqualFold(value.Name, strings.TrimSpace(idOrName)) {
+			return value, nil
+		}
+	}
+	return domain.EducationLevel{}, ErrNotFound
+}
+
+func (s *Store) EducationLevels() []domain.EducationLevel {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	values := make([]domain.EducationLevel, 0, len(s.educationLevels))
+	for _, value := range s.educationLevels {
+		values = append(values, value)
+	}
+	sort.Slice(values, func(i, j int) bool {
+		if values[i].SortOrder == values[j].SortOrder {
+			return values[i].ID < values[j].ID
+		}
+		return values[i].SortOrder < values[j].SortOrder
+	})
+	return values
+}
+
 func (s *Store) Subject(id string) (domain.Subject, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -268,11 +362,13 @@ func (s *Store) Subject(id string) (domain.Subject, error) {
 	if !ok {
 		for _, subject := range s.subjects {
 			if subject.Slug == id {
+				subject.TutorCount = s.tutorCountForSubjectLocked(subject.ID)
 				return subject, nil
 			}
 		}
 		return domain.Subject{}, ErrNotFound
 	}
+	value.TutorCount = s.tutorCountForSubjectLocked(value.ID)
 	return value, nil
 }
 
@@ -281,10 +377,24 @@ func (s *Store) Subjects() []domain.Subject {
 	defer s.mu.RUnlock()
 	values := make([]domain.Subject, 0, len(s.subjects))
 	for _, value := range s.subjects {
+		value.TutorCount = s.tutorCountForSubjectLocked(value.ID)
 		values = append(values, value)
 	}
 	sort.Slice(values, func(i, j int) bool { return values[i].Name < values[j].Name })
 	return values
+}
+
+func (s *Store) tutorCountForSubjectLocked(subjectID string) int {
+	count := 0
+	for _, tutor := range s.tutors {
+		for _, offered := range tutor.Subjects {
+			if offered.SubjectID == subjectID {
+				count++
+				break
+			}
+		}
+	}
+	return count
 }
 
 func (s *Store) Tutor(idOrSlug string) (domain.TutorProfile, domain.User, error) {
@@ -621,7 +731,7 @@ func (s *Store) Counts() map[string]int {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return map[string]int{
-		"users": len(s.users), "subjects": len(s.subjects), "tutors": len(s.tutors),
+		"educationLevels": len(s.educationLevels), "users": len(s.users), "subjects": len(s.subjects), "tutors": len(s.tutors),
 		"students": len(s.students), "availabilitySlots": len(s.availability),
 		"bookings": len(s.bookings), "lessons": len(s.lessons), "reviews": len(s.reviews),
 		"conversations": len(s.conversations), "messages": len(s.messages), "learningPacks": len(s.learningPacks),
@@ -634,6 +744,9 @@ func (s *Store) persistLocked() error {
 		return nil
 	}
 	seed := domain.SeedData{}
+	for _, value := range s.educationLevels {
+		seed.EducationLevels = append(seed.EducationLevels, value)
+	}
 	for _, value := range s.users {
 		seed.Users = append(seed.Users, value)
 	}

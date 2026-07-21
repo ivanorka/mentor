@@ -5,8 +5,10 @@ import { InteractionLayer } from "./components/InteractionLayer";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin", "latin-ext"] });
 const playfair = Playfair_Display({ variable: "--font-playfair", subsets: ["latin", "latin-ext"] });
+const siteURL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteURL),
   title: { default: "Gaudeamus Mentor — Učenje koje ostaje", template: "%s · Gaudeamus Mentor" },
   description: "Pronađi provjerenog profesora, održi instrukcije i nastavi učiti uz osobnog AI mentora.",
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },

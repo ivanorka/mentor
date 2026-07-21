@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"errors"
+	"math"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -42,6 +43,7 @@ func NewRouter(repository *store.Store, services *service.Service, config Config
 
 	v1 := router.Group("/api/v1")
 	v1.GET("/meta", api.meta)
+	v1.GET("/education-levels", api.educationLevels)
 	v1.GET("/subjects", api.subjects)
 	v1.GET("/subjects/:id", api.subject)
 	v1.GET("/tutors", api.tutors)
@@ -163,10 +165,15 @@ func (a *API) meta(c *gin.Context) {
 	ok(c, gin.H{
 		"name": "Gaudeamus Mentor API", "version": a.config.Version, "environment": "prototype",
 		"platformFeeRate": 0.15, "currency": "EUR", "locale": "hr-HR", "demoMode": a.config.DemoMode,
-		"capabilities": []string{"marketplace", "booking", "payments", "video lesson lifecycle", "AI learning packs", "personalized tests", "messaging moderation", "reputation", "analytics"},
+		"defaultEducationLevelId": domain.DefaultEducationLevelID,
+		"capabilities":            []string{"marketplace", "booking", "payments", "video lesson lifecycle", "AI learning packs", "personalized tests", "messaging moderation", "reputation", "analytics"},
 	})
 }
 
+func (a *API) educationLevels(c *gin.Context) {
+	values := a.store.EducationLevels()
+	list(c, values, len(values))
+}
 func (a *API) subjects(c *gin.Context) { list(c, a.store.Subjects(), len(a.store.Subjects())) }
 func (a *API) subject(c *gin.Context) {
 	value, err := a.store.Subject(c.Param("id"))
@@ -178,9 +185,47 @@ func (a *API) subject(c *gin.Context) {
 }
 
 func (a *API) tutors(c *gin.Context) {
-	filter := service.TutorSearch{Query: c.Query("q"), Subject: c.Query("subject"), Level: c.Query("level"), Badge: c.Query("badge"), MinPrice: number(c.Query("minPrice")), MaxPrice: number(c.Query("maxPrice")), Limit: integer(c.DefaultQuery("limit", "24")), Offset: integer(c.DefaultQuery("offset", "0"))}
+	limit, err := queryInteger(c, "limit", 24)
+	if err != nil || limit < 1 || limit > 100 {
+		fail(c, http.StatusUnprocessableEntity, "validation_error", "Parametar limit mora biti cijeli broj između 1 i 100.")
+		return
+	}
+	offset, err := queryInteger(c, "offset", 0)
+	if err != nil || offset < 0 {
+		fail(c, http.StatusUnprocessableEntity, "validation_error", "Parametar offset mora biti nenegativan cijeli broj.")
+		return
+	}
+	minPrice, err := queryNumber(c, "minPrice")
+	if err != nil || minPrice < 0 {
+		fail(c, http.StatusUnprocessableEntity, "validation_error", "Parametar minPrice mora biti nenegativan broj.")
+		return
+	}
+	maxPrice, err := queryNumber(c, "maxPrice")
+	if err != nil || maxPrice < 0 {
+		fail(c, http.StatusUnprocessableEntity, "validation_error", "Parametar maxPrice mora biti nenegativan broj.")
+		return
+	}
+	if maxPrice > 0 && minPrice > maxPrice {
+		fail(c, http.StatusUnprocessableEntity, "validation_error", "Parametar minPrice ne može biti veći od maxPrice.")
+		return
+	}
+	levelName := ""
+	if rawLevel := strings.TrimSpace(c.Query("level")); rawLevel != "" {
+		level, levelErr := a.store.EducationLevel(rawLevel)
+		if levelErr != nil {
+			fail(c, http.StatusUnprocessableEntity, "validation_error", "Odabrana razina obrazovanja nije poznata.")
+			return
+		}
+		levelName = level.Name
+	}
+	filter := service.TutorSearch{Query: c.Query("q"), Subject: c.Query("subject"), Level: levelName, Badge: c.Query("badge"), MinPrice: minPrice, MaxPrice: maxPrice, Limit: limit, Offset: offset}
 	if raw := c.Query("verified"); raw != "" {
-		value := raw == "true"
+		normalized := strings.ToLower(strings.TrimSpace(raw))
+		if normalized != "true" && normalized != "false" {
+			fail(c, http.StatusUnprocessableEntity, "validation_error", "Parametar verified mora biti true ili false.")
+			return
+		}
+		value := normalized == "true"
 		filter.Verified = &value
 	}
 	values, total := a.service.SearchTutors(filter)
@@ -294,15 +339,20 @@ func (a *API) forgotPassword(c *gin.Context) {
 
 func (a *API) googleStart(c *gin.Context) {
 	returnTo := c.DefaultQuery("returnTo", "/ucenik")
+	requestedRole := domain.Role(c.DefaultQuery("role", string(domain.RoleStudent)))
+	if requestedRole != domain.RoleStudent && requestedRole != domain.RoleTutor {
+		fail(c, http.StatusUnprocessableEntity, "validation_error", "Google registracija podržava samo učenika ili profesora.")
+		return
+	}
 	if a.config.GoogleClientID == "" || a.config.GoogleClientSecret == "" {
 		if !a.config.DemoMode {
 			fail(c, http.StatusServiceUnavailable, "google_sso_not_configured", "Google prijava još nije konfigurirana.")
 			return
 		}
-		c.Redirect(http.StatusTemporaryRedirect, strings.TrimRight(a.config.FrontendURL, "/")+"/auth/google-demo?returnTo="+url.QueryEscape(returnTo))
+		c.Redirect(http.StatusTemporaryRedirect, strings.TrimRight(a.config.FrontendURL, "/")+"/auth/google-demo?returnTo="+url.QueryEscape(returnTo)+"&role="+url.QueryEscape(string(requestedRole)))
 		return
 	}
-	authorizationURL, err := a.service.NewGoogleAuthorization(service.GoogleOAuthConfig{ClientID: a.config.GoogleClientID, ClientSecret: a.config.GoogleClientSecret, RedirectURL: a.config.GoogleRedirectURL}, returnTo)
+	authorizationURL, err := a.service.NewGoogleAuthorization(service.GoogleOAuthConfig{ClientID: a.config.GoogleClientID, ClientSecret: a.config.GoogleClientSecret, RedirectURL: a.config.GoogleRedirectURL}, returnTo, requestedRole)
 	if err != nil {
 		writeError(c, err)
 		return
@@ -600,8 +650,24 @@ func currentActor(c *gin.Context) (domain.User, bool) {
 	actor, ok := value.(domain.User)
 	return actor, ok
 }
-func number(value string) float64 { parsed, _ := strconv.ParseFloat(value, 64); return parsed }
-func integer(value string) int    { parsed, _ := strconv.Atoi(value); return parsed }
+func queryNumber(c *gin.Context, key string) (float64, error) {
+	value := strings.TrimSpace(c.Query(key))
+	if value == "" {
+		return 0, nil
+	}
+	parsed, err := strconv.ParseFloat(value, 64)
+	if err == nil && (math.IsNaN(parsed) || math.IsInf(parsed, 0)) {
+		return 0, strconv.ErrSyntax
+	}
+	return parsed, err
+}
+func queryInteger(c *gin.Context, key string, fallback int) (int, error) {
+	value := strings.TrimSpace(c.Query(key))
+	if value == "" {
+		return fallback, nil
+	}
+	return strconv.Atoi(value)
+}
 func dashboardForRole(role domain.Role) string {
 	if role == domain.RoleTutor {
 		return "/profesor"

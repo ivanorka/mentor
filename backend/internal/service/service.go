@@ -90,6 +90,12 @@ type TutorSearch struct {
 
 func (s *Service) SearchTutors(filter TutorSearch) ([]TutorView, int) {
 	query := strings.ToLower(strings.TrimSpace(filter.Query))
+	if filter.Offset < 0 {
+		filter.Offset = 0
+	}
+	if filter.Limit < 0 {
+		filter.Limit = 0
+	}
 	views := make([]TutorView, 0)
 	for _, tutor := range s.store.Tutors() {
 		user, err := s.store.User(tutor.UserID)
@@ -97,25 +103,18 @@ func (s *Service) SearchTutors(filter TutorSearch) ([]TutorView, int) {
 			continue
 		}
 		subjects := make([]domain.Subject, 0, len(tutor.Subjects))
-		matchesSubject := filter.Subject == ""
-		matchesLevel := filter.Level == ""
-		matchesPrice := filter.MinPrice == 0 && filter.MaxPrice == 0
+		matchesOffering := false
 		for _, offered := range tutor.Subjects {
 			subject, subjectErr := s.store.Subject(offered.SubjectID)
 			if subjectErr != nil {
 				continue
 			}
 			subjects = append(subjects, subject)
-			if filter.Subject == subject.ID || filter.Subject == subject.Slug {
-				matchesSubject = true
-			}
-			for _, level := range offered.Levels {
-				if strings.EqualFold(level, filter.Level) {
-					matchesLevel = true
-				}
-			}
-			if (filter.MinPrice == 0 || offered.PriceEUR >= filter.MinPrice) && (filter.MaxPrice == 0 || offered.PriceEUR <= filter.MaxPrice) {
-				matchesPrice = true
+			subjectMatches := filter.Subject == "" || strings.EqualFold(filter.Subject, subject.ID) || strings.EqualFold(filter.Subject, subject.Slug)
+			levelMatches := filter.Level == "" || containsFold(offered.Levels, filter.Level)
+			priceMatches := (filter.MinPrice == 0 || offered.PriceEUR >= filter.MinPrice) && (filter.MaxPrice == 0 || offered.PriceEUR <= filter.MaxPrice)
+			if subjectMatches && levelMatches && priceMatches {
+				matchesOffering = true
 			}
 		}
 		haystack := strings.ToLower(user.Name + " " + tutor.Headline + " " + tutor.Bio)
@@ -125,7 +124,7 @@ func (s *Service) SearchTutors(filter TutorSearch) ([]TutorView, int) {
 		if query != "" && !strings.Contains(haystack, query) {
 			continue
 		}
-		if !matchesSubject || !matchesLevel || !matchesPrice {
+		if !matchesOffering {
 			continue
 		}
 		if filter.Badge != "" && !strings.EqualFold(tutor.Badge, filter.Badge) {
@@ -145,7 +144,18 @@ func (s *Service) SearchTutors(filter TutorSearch) ([]TutorView, int) {
 		}
 		views = append(views, view)
 	}
-	sort.SliceStable(views, func(i, j int) bool { return views[i].SearchRankingScore > views[j].SearchRankingScore })
+	sort.Slice(views, func(i, j int) bool {
+		if views[i].SearchRankingScore != views[j].SearchRankingScore {
+			return views[i].SearchRankingScore > views[j].SearchRankingScore
+		}
+		if views[i].Rating != views[j].Rating {
+			return views[i].Rating > views[j].Rating
+		}
+		if views[i].ReviewCount != views[j].ReviewCount {
+			return views[i].ReviewCount > views[j].ReviewCount
+		}
+		return views[i].Slug < views[j].Slug
+	})
 	total := len(views)
 	if filter.Offset > total {
 		return []TutorView{}, total
@@ -155,6 +165,15 @@ func (s *Service) SearchTutors(filter TutorSearch) ([]TutorView, int) {
 		views = views[:filter.Limit]
 	}
 	return views, total
+}
+
+func containsFold(values []string, target string) bool {
+	for _, value := range values {
+		if strings.EqualFold(value, target) {
+			return true
+		}
+	}
+	return false
 }
 
 func rankingScore(t domain.TutorProfile) float64 {
@@ -404,13 +423,10 @@ func (s *Service) CreateReview(studentID string, input CreateReviewInput) (domai
 	}
 	review := domain.Review{ID: s.store.NextID("review"), BookingID: booking.ID, StudentID: studentID, TutorID: booking.TutorID, Rating: input.Rating, Comment: strings.TrimSpace(input.Comment), CreatedAt: s.now()}
 	tutor, _, _ := s.store.Tutor(booking.TutorID)
-	allReviews := s.store.Reviews(booking.TutorID)
-	total := input.Rating
-	for _, item := range allReviews {
-		total += item.Rating
-	}
-	tutor.ReviewCount = len(allReviews) + 1
-	tutor.Rating = math.Round((float64(total)/float64(tutor.ReviewCount))*100) / 100
+	previousCount := tutor.ReviewCount
+	previousTotal := tutor.Rating * float64(previousCount)
+	tutor.ReviewCount = previousCount + 1
+	tutor.Rating = math.Round(((previousTotal+float64(input.Rating))/float64(tutor.ReviewCount))*100) / 100
 	tutor.ReputationScore = rankingScore(tutor)
 	if err := s.store.AddReview(review, tutor); err != nil {
 		return domain.Review{}, err

@@ -16,6 +16,7 @@ Provjera:
 
 ```bash
 curl http://localhost:8081/health
+curl http://localhost:8081/api/v1/education-levels
 curl 'http://localhost:8081/api/v1/tutors?subject=matematika'
 curl -c /tmp/gaudeamus-cookie.txt \
   -H 'Content-Type: application/json' \
@@ -53,7 +54,7 @@ Istu redirect adresu unesite kao autorizirani redirect URI u Google Cloud Consol
 
 ## Podatkovni model
 
-Seed sadrži 25 korisnika, 12 predmeta, 12 profesora, 12 učenika, termine, rezervacije, sate, naplate, recenzije, poruke, AI pakete i trust & safety događaje. Izvor je [`data/seed.json`](data/seed.json).
+Seed sadrži 41 korisnika, 20 predmeta, 20 profesora, 20 učenika, termine, rezervacije, sate, naplate, recenzije, poruke, AI pakete i trust & safety događaje. Izvor je [`data/seed.json`](data/seed.json). Kanonske obrazovne razine dostupne su preko `GET /api/v1/education-levels`: osnovna škola, srednja škola (zadana u sučelju), matura, fakultet i odrasli. Backend i dalje prihvaća postojeće hrvatske labele radi kompatibilnosti.
 
 Po zadanim postavkama mutacije se trajno čuvaju u datotekama koje su isključene iz Gita:
 
@@ -64,11 +65,15 @@ AUTH_STATE_FILE=data/auth.runtime.json
 
 `runtime.snapshot.json` sadrži profile, rezervacije i ostalu domenu. `auth.runtime.json` sadrži isključivo bcrypt vjerodajnice i sažetke neprozirnih session tokena — nikada izvorne lozinke ni izvorne tokene. Za izolirani test obje varijable mogu pokazivati na privremeni direktorij.
 
+Pri pokretanju se novi seed katalog i novi demonstracijski profili spajaju s runtime snapshotom. Seed definicija kataloga ima prednost, dok registrirani korisnici, njihove profilne promjene i transakcije iz snapshota ostaju sačuvani. Time proširenje kataloga ne zahtijeva brisanje lokalnih računa.
+
 Store je zaključan `RWMutex` mehanizmom; rezervacija termina i provjera preklapanja izvršavaju se unutar iste kritične sekcije.
 
 ## Poslovna pravila
 
 - Profesor mora predavati odabrani predmet, a rezervacija mora odgovarati otvorenom terminu.
+- Kombinirani filtri predmeta, razine i cijene moraju odgovarati istoj profesorovoj ponudi; rangiranje ima determinističan redoslijed.
+- Nova profesorska registracija prihvaća kanonske `levels` vrijednosti, a bez njih sigurno koristi samo zadanu razinu Srednja škola.
 - Termin traje 30–120 minuta; backend atomarno sprječava dvostruku rezervaciju.
 - Cijena se računa iz cjenika profesora i trajanja. Platforma uzima 15%, a ostatak postaje isplata profesoru.
 - Samo plaćena rezervacija prelazi u `confirmed` i može otvoriti sat.

@@ -36,10 +36,12 @@ Registracija, prijava, odjava, obnova lozinke i Google SSO ulaz dostupni su na `
 
 ## Produktni prostori
 
-- Javni landing, katalog predmeta, pretraga i profil profesora, booking flow i informativne stranice.
-- Učenik: dashboard, povijest lekcija, AI paket, AI mentor, poruke i videoučionica.
+- Javni landing, katalog od 20 predmeta, objašnjivi Mentor Match, pretraga, dinamički profili profesora, booking flow i informativne stranice.
+- Učenik: dashboard, povijest lekcija, AI paket, interaktivni Study Studio (objašnjenja, vježbe, testovi i kartice), poruke i videoučionica.
 - Profesor: dashboard, kalendar, učenici, lekcije, poruke i zarada.
-- Operacije: command center, korisnici, kvaliteta sati, financije, trust & safety, podrška te live API/dataset konzola.
+- Operacije: command center, korisnici, kvaliteta sati, financije, trust & safety, podrška, investitorski simulator te live API/dataset konzola.
+
+Reproducibilni dataset sadrži 20 mentora i 20 učenika. Podržane su osnovna škola, srednja škola, matura, fakultet i odrasli; **Srednja škola** ostaje zadana razina kroz landing, katalog, pretragu, Mentor Match i registraciju profesora.
 
 ## Arhitektura
 
@@ -54,6 +56,8 @@ Next.js / React / Vinext     Go 1.26 / Gin
 ```
 
 Frontend ostaje kompatibilan s postojećim Cloudflare/Sites runtimeom. Go API izdaje neprozirnu sedmodnevnu sesiju u `HttpOnly`, `SameSite=Lax` kolačiću, lozinke štiti bcryptom i podržava Google OpenID Connect. Registrirani profili, bcrypt vjerodajnice i aktivne sesije trajno se zapisuju u ignorirane lokalne runtime datoteke te preživljavaju restart API-ja. Zaglavlje `X-Demo-User-ID` ostaje samo kao lokalni testni adapter.
+
+Novi seed katalog pri pokretanju se sigurno spaja s runtime snapshotom: nove predmete i demonstracijske profile dobivate bez brisanja prethodno registriranih računa, rezervacija ili poruka.
 
 ## Build i hosting
 

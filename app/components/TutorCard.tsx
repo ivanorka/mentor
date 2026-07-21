@@ -19,7 +19,7 @@ export function TutorCard({ tutor, featured = false }: { tutor: Tutor; featured?
   };
   return (
     <article className={`tutor-card ${featured ? "tutor-card-featured" : ""}`}>
-      {featured && <div className="top-match">98% podudaranje</div>}
+      {(featured || tutor.matchScore !== undefined) && <div className="top-match">{tutor.matchScore !== undefined ? `${tutor.matchScore}% podudaranje` : "Istaknuti mentor"}</div>}
       <div className="tutor-card-head">
         <div className={`avatar avatar-${tutor.accent}`} aria-hidden="true"><span>{tutor.initials}</span></div>
         <button type="button" className={`icon-button favorite ${saved ? "saved" : ""}`} onClick={toggleSaved} aria-pressed={saved} aria-label={`${saved ? "Ukloni" : "Spremi"} profesora ${tutor.name}`}><Heart size={18} fill={saved ? "currentColor" : "none"} /></button>
@@ -35,6 +35,7 @@ export function TutorCard({ tutor, featured = false }: { tutor: Tutor; featured?
         {tutor.video && <span className="tag tag-video">Video profil</span>}
       </div>
       <p className="tutor-quote">“{tutor.quote}”</p>
+      {tutor.matchReasons?.length ? <ul className="match-reasons">{tutor.matchReasons.map((reason) => <li key={reason}>{reason}</li>)}</ul> : null}
       <div className="reputation-row">
         <span><Star size={15} fill="currentColor" /> <strong>{tutor.rating.toFixed(2)}</strong> ({tutor.reviews})</span>
         <span><RotateCcw size={15} /> {tutor.repeatRate}% ponovno</span>

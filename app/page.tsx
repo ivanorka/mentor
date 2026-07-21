@@ -7,6 +7,7 @@ import {
 import { MarketingHeader } from "./components/MarketingHeader";
 import { TutorCard } from "./components/TutorCard";
 import { tutors } from "./data";
+import { DEFAULT_EDUCATION_LEVEL_ID, EDUCATION_LEVELS, SUBJECT_CATALOG } from "./lib/catalog";
 
 export default function Home() {
   return (
@@ -21,8 +22,8 @@ export default function Home() {
             <h1>Svaki sat postaje<br /><em>znanje koje ostaje.</em></h1>
             <p>Pronađi provjerenog profesora, rezerviraj termin i nastavi učiti uz osobnog AI mentora koji poznaje tvoj napredak.</p>
             <form className="hero-search" action="/pronadi-profesora">
-              <label><span>Što želiš naučiti?</span><strong>Matematika</strong></label>
-              <label><span>Razina</span><strong>Srednja škola</strong></label>
+              <label><span>Što želiš naučiti?</span><select name="subject" defaultValue="matematika" aria-label="Odaberi predmet">{SUBJECT_CATALOG.map((subject) => <option value={subject.slug} key={subject.id}>{subject.name}</option>)}</select></label>
+              <label><span>Razina</span><select name="level" defaultValue={DEFAULT_EDUCATION_LEVEL_ID} aria-label="Odaberi razinu">{EDUCATION_LEVELS.map((level) => <option value={level.id} key={level.id}>{level.label}</option>)}</select></label>
               <button aria-label="Pronađi profesora" type="submit">Pronađi mentora <ArrowRight size={18} /></button>
             </form>
             <div className="hero-proof">

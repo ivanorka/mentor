@@ -5,10 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
 import { Brand } from "../components/Brand";
+import { DEFAULT_EDUCATION_LEVEL_ID, EDUCATION_LEVELS, SUBJECT_CATALOG } from "../lib/catalog";
 
-const questions = [
-  { key: "subject", title: "Koji predmet želiš svladati?", note: "Odaberi područje u kojem ti treba najviše podrške.", options: [["matematika", "Matematika", "Brojevi, algebra, analiza"], ["fizika", "Fizika", "Mehanika, struja, valovi"], ["engleski-jezik", "Engleski", "Gramatika, razgovor, matura"], ["kemija", "Kemija", "Reakcije, organska, zadaci"], ["informatika", "Informatika", "Programiranje i algoritmi"]] },
-  { key: "level", title: "Na kojoj si razini?", note: "Tako filtriramo mentore s pravim iskustvom.", options: [["Osnovna škola", "Osnovna škola", "5. – 8. razred"], ["Srednja škola", "Srednja škola", "Gimnazija ili strukovna"], ["Matura", "Državna matura", "A ili B razina"], ["Fakultet", "Fakultet", "Kolegiji i ispiti"]] },
+type MatchOption = readonly [value: string, label: string, note: string];
+type MatchQuestion = { key: string; title: string; note: string; options: readonly MatchOption[] };
+
+const questions: readonly MatchQuestion[] = [
+  { key: "subject", title: "Koji predmet želiš svladati?", note: "Odaberi područje u kojem ti treba najviše podrške.", options: SUBJECT_CATALOG.map((subject) => [subject.slug, subject.name, subject.description] as const) },
+  { key: "level", title: "Na kojoj si razini?", note: "Srednja škola je početni izbor, a možeš odabrati bilo koju razinu.", options: EDUCATION_LEVELS.map((level) => [level.id, level.label, level.description] as const) },
   { key: "goal", title: "Što ti je sada najvažnije?", note: "Cilj utječe na stil i tempo preporučenog mentora.", options: [["razumijevanje", "Razumjeti gradivo", "Od temelja, bez preskakanja"], ["ispit", "Pripremiti ispit", "Fokus na tipične zadatke"], ["ocjena", "Popraviti ocjenu", "Plan za brzi, održivi napredak"], ["izvrsnost", "Doseći izvrsnost", "Napredne teme i izazovi"]] },
   { key: "style", title: "Kako najlakše učiš?", note: "AI podudaranje koristi tvoju preferenciju objašnjavanja.", options: [["koraci", "Korak po korak", "Jasna struktura i primjeri"], ["vizualno", "Vizualno", "Dijagrami, boje i modeli"], ["praksa", "Kroz zadatke", "Odmah primjena i feedback"], ["razgovor", "Kroz razgovor", "Pitanja i zajedničko otkrivanje"]] },
   { key: "budget", title: "Koliki ti je budžet po satu?", note: "Prikazat ćemo mentore unutar odabranog raspona.", options: [["16", "Do 16 €", "Najpovoljnije opcije"], ["20", "Do 20 €", "Najviše dostupnih mentora"], ["25", "Do 25 €", "Iskusni i Elite mentori"], ["35", "Fleksibilno", "Kvaliteta je prvi kriterij"]] },
@@ -17,7 +21,7 @@ const questions = [
 export default function MentorMatchPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string>>({ level: DEFAULT_EDUCATION_LEVEL_ID });
   const question = questions[step];
   const choose = (value: string) => setAnswers((current) => ({ ...current, [question.key]: value }));
   const next = () => {

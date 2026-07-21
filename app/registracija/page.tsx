@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, BookOpen, Check, Eye, EyeOff, GraduationCap, LoaderCircle, ShieldCheck, Sparkles } from "lucide-react";
 import { Brand } from "../components/Brand";
 import { API_BASE_URL, apiFetch } from "../lib/api";
+import { DEFAULT_EDUCATION_LEVEL_ID, EDUCATION_LEVELS, SUBJECT_CATALOG, educationLevelLabel, type EducationLevelId } from "../lib/catalog";
 
 type Role = "student" | "tutor";
 type Subject = { id: string; name: string; category: string };
@@ -16,8 +17,9 @@ function RegistrationContent() {
   const searchParams = useSearchParams();
   const [step, setStep] = useState(1);
   const [role, setRole] = useState<Role>(() => searchParams.get("role") === "tutor" ? "tutor" : "student");
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>(() => SUBJECT_CATALOG.map(({ id, name, category }) => ({ id, name, category })));
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  const [teachingLevels, setTeachingLevels] = useState<EducationLevelId[]>([DEFAULT_EDUCATION_LEVEL_ID]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +36,7 @@ function RegistrationContent() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    apiFetch<Subject[]>("/subjects").then(({ data }) => setSubjects(data)).catch(() => setError("Predmeti se trenutačno ne mogu učitati."));
+    apiFetch<Subject[]>("/subjects").then(({ data }) => setSubjects(data)).catch(() => undefined);
   }, []);
 
   const passwordChecks = useMemo(() => [
@@ -57,11 +59,12 @@ function RegistrationContent() {
   const submit = async (event: FormEvent) => {
     event.preventDefault(); setError("");
     if (role === "tutor" && selectedSubjects.length === 0) return setError("Odaberite barem jedan predmet.");
+    if (role === "tutor" && teachingLevels.length === 0) return setError("Odaberite barem jednu razinu na kojoj predajete.");
     setLoading(true);
     try {
       const { data } = await apiFetch<AuthResult>("/auth/register", {
         method: "POST",
-        body: JSON.stringify({ name, email, password, role, acceptedTerms, grade, school, goals: goal ? [goal] : [], headline, bio, subjectIds: selectedSubjects, priceEur: price }),
+        body: JSON.stringify({ name, email, password, role, acceptedTerms, grade, school, goals: goal ? [goal] : [], headline, bio, subjectIds: selectedSubjects, levels: teachingLevels, priceEur: price }),
       });
       router.push(data.dashboard);
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Registracija nije uspjela."); }
@@ -70,7 +73,7 @@ function RegistrationContent() {
 
   const googleLogin = () => {
     const returnTo = role === "tutor" ? "/profesor" : "/ucenik";
-    window.location.href = `${API_BASE_URL}/auth/google/start?returnTo=${encodeURIComponent(returnTo)}`;
+    window.location.href = `${API_BASE_URL}/auth/google/start?returnTo=${encodeURIComponent(returnTo)}&role=${role}`;
   };
 
   return <div className="login-page registration-page">
@@ -90,7 +93,7 @@ function RegistrationContent() {
         <label className="form-label">Ponovi lozinku<input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" required /></label>
         <label className="terms-row"><input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} /> <span>Prihvaćam <Link href="/sigurnost">uvjete korištenja i pravila privatnosti</Link>.</span></label>
       </> : role === "student" ? <>
-        <label className="form-label">Razred<select value={grade} onChange={(event) => setGrade(event.target.value)}><option>7. razred osnovne škole</option><option>8. razred osnovne škole</option><option>1. razred srednje škole</option><option>2. razred srednje škole</option><option>3. razred srednje škole</option><option>4. razred srednje škole</option><option>Fakultet</option></select></label>
+        <label className="form-label">Razina i razred<select value={grade} onChange={(event) => setGrade(event.target.value)}><optgroup label="Osnovna škola">{Array.from({ length: 8 }, (_, index) => <option key={`os-${index + 1}`}>{index + 1}. razred osnovne škole</option>)}</optgroup><optgroup label="Srednja škola — zadano"><option>1. razred srednje škole</option><option>2. razred srednje škole</option><option>3. razred srednje škole</option><option>4. razred srednje škole</option></optgroup><optgroup label="Visoko obrazovanje"><option>Preddiplomski studij</option><option>Diplomski studij</option><option>Poslijediplomski studij</option></optgroup><optgroup label="Cjeloživotno učenje"><option>Odrasli · profesionalni razvoj</option><option>Odrasli · jezici i certifikati</option></optgroup></select></label>
         <label className="form-label">Škola ili fakultet <small>neobavezno</small><input value={school} onChange={(event) => setSchool(event.target.value)} placeholder="Naziv škole" /></label>
         <label className="form-label">Glavni cilj<textarea value={goal} onChange={(event) => setGoal(event.target.value)} rows={3} /></label>
         <div className="onboarding-preview"><Sparkles /><span><strong>AI Mentor prilagodit će se ovom cilju</strong><small>Nakon svakog sata prati teme, pogreške i sljedeći najbolji korak.</small></span></div>
@@ -98,6 +101,7 @@ function RegistrationContent() {
         <label className="form-label">Profesionalni naslov<input value={headline} onChange={(event) => setHeadline(event.target.value)} required /></label>
         <label className="form-label">Kratko predstavljanje<textarea value={bio} onChange={(event) => setBio(event.target.value)} rows={3} placeholder="Opišite svoj pristup, iskustvo i kome najviše pomažete." /></label>
         <fieldset className="subject-picker"><legend>Predmeti koje predaješ</legend><div>{subjects.map((subject) => <button type="button" className={selectedSubjects.includes(subject.id) ? "selected" : ""} onClick={() => setSelectedSubjects((current) => current.includes(subject.id) ? current.filter((id) => id !== subject.id) : [...current, subject.id])} key={subject.id}>{selectedSubjects.includes(subject.id) && <Check />} {subject.name}</button>)}</div></fieldset>
+        <fieldset className="subject-picker teaching-level-picker"><legend>Razine na kojima predaješ <small>Srednja škola je početni odabir</small></legend><div>{EDUCATION_LEVELS.map((level) => <button type="button" className={teachingLevels.includes(level.id) ? "selected" : ""} onClick={() => setTeachingLevels((current) => current.includes(level.id) ? current.filter((id) => id !== level.id) : [...current, level.id])} key={level.id}>{teachingLevels.includes(level.id) && <Check />} {educationLevelLabel(level.id)}</button>)}</div></fieldset>
         <label className="form-label price-label">Početna cijena sata <strong>{price} €</strong><input type="range" min="10" max="60" value={price} onChange={(event) => setPrice(Number(event.target.value))} /></label>
         <div className="onboarding-preview"><ShieldCheck /><span><strong>Verifikacija slijedi nakon registracije</strong><small>Dodaj diplomu, certifikate i video kako bi profil dobio veću vidljivost.</small></span></div>
       </>}

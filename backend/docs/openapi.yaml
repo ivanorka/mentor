@@ -79,6 +79,7 @@ paths:
       summary: Pokreni Google OAuth 2.0 / OpenID Connect authorization-code tok
       parameters:
         - { name: returnTo, in: query, schema: { type: string, default: /ucenik } }
+        - { name: role, in: query, schema: { type: string, enum: [student, tutor], default: student }, description: Uloga se koristi samo pri kreiranju novog Google računa; postojeći račun zadržava svoju ulogu. }
       responses:
         '307': { description: Preusmjeravanje na Google ili lokalni SSO demo }
   /auth/google/callback:
@@ -104,6 +105,13 @@ paths:
               properties: { email: { type: string, format: email } }
       responses:
         '200': { $ref: '#/components/responses/Success' }
+  /demo/identities:
+    get:
+      tags: [Auth]
+      summary: Siguran popis demonstracijskih identiteta kada je demo način uključen
+      responses:
+        '200': { $ref: '#/components/responses/List' }
+        '404': { $ref: '#/components/responses/Error' }
   /users/me:
     get:
       tags: [Auth]
@@ -127,12 +135,39 @@ paths:
                 locale: { type: string, enum: [hr-HR, en-GB] }
       responses:
         '200': { $ref: '#/components/responses/Success' }
+  /students/{id}:
+    get:
+      tags: [Dashboards]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Privatni učenički profil vlasnika ili administratora
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+        '403': { $ref: '#/components/responses/Error' }
   /meta:
     get:
       tags: [Catalog]
       summary: Mogućnosti i konfiguracija API-ja
       responses:
         '200': { $ref: '#/components/responses/Success' }
+  /education-levels:
+    get:
+      tags: [Catalog]
+      summary: Kanonske obrazovne razine; srednja škola je zadana razina sučelja
+      responses:
+        '200':
+          description: Sortiran popis obrazovnih razina
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/EducationLevel' }
+                  meta: { type: object }
   /subjects:
     get:
       tags: [Catalog]
@@ -155,13 +190,16 @@ paths:
       parameters:
         - { name: q, in: query, schema: { type: string } }
         - { name: subject, in: query, schema: { type: string }, description: ID ili slug predmeta }
-        - { name: level, in: query, schema: { type: string } }
+        - name: level
+          in: query
+          description: Kanonski ID razine; radi kompatibilnosti prihvaća se i hrvatska labela.
+          schema: { type: string, enum: [osnovna-skola, srednja-skola, matura, fakultet, odrasli] }
         - { name: badge, in: query, schema: { type: string } }
-        - { name: minPrice, in: query, schema: { type: number } }
-        - { name: maxPrice, in: query, schema: { type: number } }
+        - { name: minPrice, in: query, schema: { type: number, minimum: 0 } }
+        - { name: maxPrice, in: query, schema: { type: number, minimum: 0 } }
         - { name: verified, in: query, schema: { type: boolean } }
-        - { name: limit, in: query, schema: { type: integer, default: 24 } }
-        - { name: offset, in: query, schema: { type: integer, default: 0 } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 24 } }
+        - { name: offset, in: query, schema: { type: integer, minimum: 0, default: 0 } }
       responses:
         '200': { $ref: '#/components/responses/List' }
   /tutors/{id}:
@@ -182,6 +220,15 @@ paths:
         - { name: status, in: query, schema: { type: string, enum: [open, booked] } }
       responses:
         '200': { $ref: '#/components/responses/List' }
+  /tutors/{id}/reviews:
+    get:
+      tags: [Catalog]
+      summary: Recenzije profesora
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      responses:
+        '200': { $ref: '#/components/responses/List' }
+        '404': { $ref: '#/components/responses/Error' }
   /bookings:
     get:
       tags: [Bookings]
@@ -203,6 +250,17 @@ paths:
         '201': { $ref: '#/components/responses/Success' }
         '409': { $ref: '#/components/responses/Error' }
         '422': { $ref: '#/components/responses/Error' }
+  /bookings/{id}:
+    get:
+      tags: [Bookings]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Rezervacija dostupna njezinom učeniku, profesoru ili administratoru
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
   /bookings/{id}/pay:
     post:
       tags: [Bookings]
@@ -349,6 +407,22 @@ paths:
       responses:
         '200': { $ref: '#/components/responses/Success' }
         '403': { $ref: '#/components/responses/Error' }
+  /admin/trust-events:
+    get:
+      tags: [Dashboards]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Trust and safety događaji za administratore
+      responses:
+        '200': { $ref: '#/components/responses/List' }
+        '403': { $ref: '#/components/responses/Error' }
+  /admin/dataset:
+    get:
+      tags: [Dashboards]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Administratorski pregled demonstracijskog skupa podataka
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+        '403': { $ref: '#/components/responses/Error' }
 components:
   securitySchemes:
     SessionCookie:
@@ -415,7 +489,20 @@ components:
         headline: { type: string }
         bio: { type: string }
         subjectIds: { type: array, items: { type: string } }
+        levels:
+          type: array
+          description: Kanonski ID-evi ili hrvatske labele; za profesora je zadana Srednja škola.
+          items: { type: string, enum: [osnovna-skola, srednja-skola, matura, fakultet, odrasli] }
         priceEur: { type: number, minimum: 10, maximum: 100 }
+    EducationLevel:
+      type: object
+      required: [id, name, sortOrder, isDefault]
+      properties:
+        id: { type: string, enum: [osnovna-skola, srednja-skola, matura, fakultet, odrasli] }
+        name: { type: string }
+        description: { type: string }
+        sortOrder: { type: integer }
+        isDefault: { type: boolean }
     CreateBooking:
       type: object
       required: [tutorId, subjectId, availabilityId, startsAt, endsAt, topic, goal]
