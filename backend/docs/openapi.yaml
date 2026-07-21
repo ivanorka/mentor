@@ -1,0 +1,441 @@
+openapi: 3.1.0
+info:
+  title: Gaudeamus Mentor API
+  version: 0.1.0
+  description: API ugovor za marketplace instrukcija, lekcije, reputaciju, AI učenje i trust & safety.
+servers:
+  - url: http://localhost:8081/api/v1
+    description: Lokalni prototip
+tags:
+  - name: Auth
+  - name: Catalog
+  - name: Bookings
+  - name: Lessons
+  - name: Learning
+  - name: Messaging
+  - name: Dashboards
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Kreiraj učenički ili profesorski račun i postavi sesiju
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Register' }
+      responses:
+        '201': { $ref: '#/components/responses/Success' }
+        '409': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Prijava e-mailom i lozinkom
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Login' }
+      responses:
+        '200':
+          description: Postavlja HttpOnly gm_session kolačić
+          headers:
+            Set-Cookie: { schema: { type: string } }
+          content:
+            application/json: { schema: { type: object } }
+        '401': { $ref: '#/components/responses/Error' }
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Poništi sesiju i ukloni kolačić
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /auth/session:
+    get:
+      tags: [Auth]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Trenutačni korisnik i njegova početna nadzorna ploča
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+        '401': { $ref: '#/components/responses/Error' }
+  /auth/password/forgot:
+    post:
+      tags: [Auth]
+      summary: Pokreni neutralni tok obnove lozinke
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties: { email: { type: string, format: email } }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /auth/google/start:
+    get:
+      tags: [Auth]
+      summary: Pokreni Google OAuth 2.0 / OpenID Connect authorization-code tok
+      parameters:
+        - { name: returnTo, in: query, schema: { type: string, default: /ucenik } }
+      responses:
+        '307': { description: Preusmjeravanje na Google ili lokalni SSO demo }
+  /auth/google/callback:
+    get:
+      tags: [Auth]
+      summary: Google OAuth callback, provjera state vrijednosti i kreiranje sesije
+      parameters:
+        - { name: state, in: query, required: true, schema: { type: string } }
+        - { name: code, in: query, required: true, schema: { type: string } }
+      responses:
+        '307': { description: Preusmjeravanje na frontend callback }
+  /auth/google/demo:
+    post:
+      tags: [Auth]
+      summary: Lokalni demonstracijski ekvivalent Google prijave
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties: { email: { type: string, format: email } }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /users/me:
+    get:
+      tags: [Auth]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Profil prijavljenog korisnika
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+    patch:
+      tags: [Auth]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Promijeni ime i jezik prijavljenog korisnika
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, minLength: 3 }
+                locale: { type: string, enum: [hr-HR, en-GB] }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /meta:
+    get:
+      tags: [Catalog]
+      summary: Mogućnosti i konfiguracija API-ja
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /subjects:
+    get:
+      tags: [Catalog]
+      summary: Popis predmeta
+      responses:
+        '200': { $ref: '#/components/responses/List' }
+  /subjects/{id}:
+    get:
+      tags: [Catalog]
+      summary: Predmet prema ID-u ili slugu
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+        '404': { $ref: '#/components/responses/Error' }
+  /tutors:
+    get:
+      tags: [Catalog]
+      summary: Rangirana pretraga profesora
+      parameters:
+        - { name: q, in: query, schema: { type: string } }
+        - { name: subject, in: query, schema: { type: string }, description: ID ili slug predmeta }
+        - { name: level, in: query, schema: { type: string } }
+        - { name: badge, in: query, schema: { type: string } }
+        - { name: minPrice, in: query, schema: { type: number } }
+        - { name: maxPrice, in: query, schema: { type: number } }
+        - { name: verified, in: query, schema: { type: boolean } }
+        - { name: limit, in: query, schema: { type: integer, default: 24 } }
+        - { name: offset, in: query, schema: { type: integer, default: 0 } }
+      responses:
+        '200': { $ref: '#/components/responses/List' }
+  /tutors/{id}:
+    get:
+      tags: [Catalog]
+      summary: Javni profil profesora
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+        '404': { $ref: '#/components/responses/Error' }
+  /tutors/{id}/availability:
+    get:
+      tags: [Catalog]
+      summary: Kalendar profesora
+      parameters:
+        - $ref: '#/components/parameters/ID'
+        - { name: status, in: query, schema: { type: string, enum: [open, booked] } }
+      responses:
+        '200': { $ref: '#/components/responses/List' }
+  /bookings:
+    get:
+      tags: [Bookings]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Rezervacije trenutačnog korisnika
+      responses:
+        '200': { $ref: '#/components/responses/List' }
+        '401': { $ref: '#/components/responses/Error' }
+    post:
+      tags: [Bookings]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Kreiraj rezervaciju i zaključaj termin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateBooking' }
+      responses:
+        '201': { $ref: '#/components/responses/Success' }
+        '409': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+  /bookings/{id}/pay:
+    post:
+      tags: [Bookings]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Naplati rezervaciju i potvrdi sat
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /bookings/{id}/cancel:
+    patch:
+      tags: [Bookings]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Otkaži rezervaciju i odredi refund status
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties: { reason: { type: string } }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /lessons/{id}/start:
+    post:
+      tags: [Lessons]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Pokreni plaćeni sat
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /lessons/{id}/end:
+    post:
+      tags: [Lessons]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Završi sat i generiraj AI paket
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /lessons/{id}/learning-pack:
+    get:
+      tags: [Learning]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Dohvati AI materijale sata
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /ai/tests:
+    post:
+      tags: [Learning]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Generiraj test iz učenikovih slabijih tema
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subjectId]
+              properties:
+                subjectId: { type: string }
+                questionCount: { type: integer, minimum: 3, maximum: 10 }
+      responses:
+        '201': { $ref: '#/components/responses/Success' }
+  /conversations/{id}/messages:
+    get:
+      tags: [Messaging]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Poruke razgovora
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      responses:
+        '200': { $ref: '#/components/responses/List' }
+    post:
+      tags: [Messaging]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Pošalji poruku uz moderaciju kontakata
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties: { body: { type: string, maxLength: 2000 } }
+      responses:
+        '201': { $ref: '#/components/responses/Success' }
+  /conversations:
+    get:
+      tags: [Messaging]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Razgovori trenutačnog korisnika s drugim sudionikom i zadnjom porukom
+      responses:
+        '200': { $ref: '#/components/responses/List' }
+  /reviews:
+    post:
+      tags: [Catalog]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Ocijeni dovršeni sat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bookingId, rating, comment]
+              properties:
+                bookingId: { type: string }
+                rating: { type: integer, minimum: 1, maximum: 5 }
+                comment: { type: string }
+      responses:
+        '201': { $ref: '#/components/responses/Success' }
+  /dashboards/student/{id}:
+    get:
+      tags: [Dashboards]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Učenikov pregled napretka i rezervacija
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /dashboards/tutor/{id}:
+    get:
+      tags: [Dashboards]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Profesorov pregled termina, reputacije i zarade
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /admin/dashboard:
+    get:
+      tags: [Dashboards]
+      security: [{ SessionCookie: [] }, { DemoIdentity: [] }]
+      summary: Platformska analitika za administratora
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+        '403': { $ref: '#/components/responses/Error' }
+components:
+  securitySchemes:
+    SessionCookie:
+      type: apiKey
+      in: cookie
+      name: gm_session
+      description: Neprozirni sedmodnevni token; poslužitelj sprema samo SHA-256 sažetak, a preglednik ga prima kao HttpOnly SameSite=Lax kolačić.
+    DemoIdentity:
+      type: apiKey
+      in: header
+      name: X-Demo-User-ID
+      description: Samo za lokalne seed scenarije i automatizirane demonstracije.
+  parameters:
+    ID:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+  responses:
+    Success:
+      description: Uspješan odgovor
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [data]
+            properties: { data: {} }
+    List:
+      description: Uspješan popis
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [data, meta]
+            properties:
+              data: { type: array, items: {} }
+              meta:
+                type: object
+                properties: { total: { type: integer } }
+    Error:
+      description: Strukturirana pogreška
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Login:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password }
+    Register:
+      type: object
+      required: [name, email, password, role, acceptedTerms]
+      properties:
+        name: { type: string, minLength: 3 }
+        email: { type: string, format: email }
+        password: { type: string, format: password, minLength: 10 }
+        role: { type: string, enum: [student, tutor] }
+        acceptedTerms: { type: boolean, const: true }
+        grade: { type: string }
+        school: { type: string }
+        goals: { type: array, items: { type: string } }
+        headline: { type: string }
+        bio: { type: string }
+        subjectIds: { type: array, items: { type: string } }
+        priceEur: { type: number, minimum: 10, maximum: 100 }
+    CreateBooking:
+      type: object
+      required: [tutorId, subjectId, availabilityId, startsAt, endsAt, topic, goal]
+      properties:
+        tutorId: { type: string }
+        subjectId: { type: string }
+        availabilityId: { type: string }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        topic: { type: string }
+        goal: { type: string }
+        studentNote: { type: string }
+    Error:
+      type: object
+      required: [error, requestId]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+        requestId: { type: string }
