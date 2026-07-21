@@ -1794,3 +1794,105 @@ h1 em, h2 em { color: var(--coral); font-weight: inherit; }
 .setting-toggle button.off i { transform: translateX(0); }
 .settings-page nav button { display: flex; align-items: center; gap: 7px; padding: 9px; color: var(--muted); border: 0; border-radius: 8px; background: transparent; font-size: 8px; cursor: pointer; }
 .settings-page nav button.active { color: var(--blue); background: #eaf1fb; }
+
+/* Product readability scale
+   The product workspace originally used a very compact presentation scale. These
+   overrides keep the information-dense layout, while making every interactive
+   screen comfortable to read at a normal laptop zoom level. */
+.app-layout { font-size: 14px; }
+.sidebar .brand-copy strong { font-size: 14px; }
+.sidebar .brand-copy em { font-size: 10px; }
+.role-label, .app-eyebrow { font-size: 11px; letter-spacing: .08em; }
+.app-nav a, .settings-page nav button { font-size: 13px; }
+.app-nav em { font-size: 10px; }
+.sidebar-bottom > a, .mini-profile strong { font-size: 12px; }
+.mini-profile small { font-size: 10px; }
+.app-topbar h1 { font-size: 29px; }
+.notification, .notification-badge { font-size: 11px; }
+
+.student-hero-card p, .tutor-dashboard-hero p, .dashboard-copy p { font-size: 14px; line-height: 1.55; }
+.dashboard-metrics small, .dashboard-metrics em { font-size: 11px; }
+.panel-heading small, .panel-heading label, .panel-heading > a, .panel-heading > button { font-size: 12px; }
+.panel-heading select { font-size: 12px; }
+.workspace-summary small, .generic-workspace article small, .generic-workspace article em { font-size: 11px; }
+.workspace-summary strong { font-size: 18px; }
+.generic-workspace article strong { font-size: 14px; }
+.generic-toolbar input, .generic-toolbar button, .status-pill { font-size: 12px; }
+
+.inbox-layout, .settings-page { font-size: 14px; }
+.conversation-list small, .conversation-list span, .message-meta, .chat-head small,
+.settings-page small, .settings-page p { font-size: 12px; line-height: 1.5; }
+.conversation-list strong, .chat-head strong, .settings-page h3 { font-size: 14px; }
+.chat-message p, .chat-composer textarea { font-size: 14px; line-height: 1.55; }
+
+/* AI Study Studio and AI mentor */
+.ai-mentor-layout { font-size: 14px; }
+.context-student strong, .context-block strong, .ai-chat-head strong { font-size: 14px; }
+.context-student small, .context-block label, .context-block small, .ai-chat-head span,
+.day-divider, .message small, .ai-input small { font-size: 11px; }
+.context-block li, .context-block a { font-size: 13px; }
+.message p, .ai-input textarea { font-size: 15px; line-height: 1.6; }
+.quick-prompts button { font-size: 12px; }
+.deterministic-badge { font-size: 10px !important; }
+.study-mode-tabs button, .study-primary-action { font-size: 12px; }
+.mentor-choice-grid strong, .study-panel h3, .study-progress-head strong { font-size: 14px; }
+.mentor-choice-grid small, .study-panel > header small, .study-panel > header p,
+.study-progress-head em { font-size: 12px; line-height: 1.45; }
+.explanation-step small, .memory-hook small, .study-provenance small,
+.study-provenance em, .study-source-card small { font-size: 10px; }
+.explanation-step strong { font-size: 16px; }
+.explanation-step p, .memory-hook strong, .study-provenance strong,
+.study-source-card span { font-size: 13px; line-height: 1.5; }
+.practice-card label, .practice-card small, .quiz-result small, .flash-card figcaption,
+.study-source-card em { font-size: 11px; }
+.practice-card p, .quiz-result p { font-size: 14px; line-height: 1.55; }
+.practice-card input { font-size: 14px; }
+.practice-card button, .practice-support button, .quiz-options button,
+.flash-actions button { font-size: 12px; }
+.quiz-choice i { font-size: 11px; }
+
+/* Lesson packs */
+.lesson-pack-layout { font-size: 14px; }
+.lesson-pack-nav a { font-size: 13px; }
+.pack-chip { font-size: 11px; }
+.pack-hero p, .summary-note p, .concept-card p, .lesson-task p, .lesson-quiz p { font-size: 14px; line-height: 1.55; }
+.mastery-card span, .pack-title small, .concept-card small, .pack-mentor small,
+.next-recommendation small, .lesson-recording span { font-size: 11px; }
+.mastery-card small, .pack-mentor em, .next-recommendation p,
+.lesson-recording strong, .lesson-chapters strong { font-size: 12px; }
+.pack-title h3 { font-size: 22px; }
+.concept-card h4, .pack-mentor strong { font-size: 14px; }
+.lesson-task button, .lesson-pack section > button, .lesson-quiz a,
+.lesson-recording button, .lesson-chapters button, .next-recommendation a { font-size: 12px; }
+
+/* Tutor workspace, calendar and earnings screens */
+.tutor-dashboard-hero small, .tutor-dashboard-hero em, .tutor-stat-card small,
+.tutor-stat-card em, .calendar-grid-head > span, .calendar-grid-head strong,
+.time-axis span, .event small, .event span, .availability-block { font-size: 11px; }
+.tutor-stat-card strong, .calendar-toolbar strong, .event strong { font-size: 13px; }
+.calendar-toolbar button, .availability-card p, .availability-card button,
+.calendar-side > div:last-child button, .calendar-tip small { font-size: 12px; }
+.availability-card h3 { font-size: 18px; }
+.calendar-side > div:first-child small, .calendar-tip strong { font-size: 12px; }
+.earnings-overview small, .earnings-overview em, .large-bar-chart span,
+.large-bar-chart small, .bank-card small, .bank-card span, .payout-account > p,
+.transaction-head, .transaction-row, .transaction-row > em { font-size: 11px; }
+.earnings-overview strong { font-size: 22px; }
+.bank-card strong { font-size: 16px; }
+.payout-account > button, .transaction-panel .panel-heading > button { font-size: 12px; }
+.transaction-row > span:nth-child(2) strong { font-size: 13px; }
+
+/* A safe baseline for less prominent components in the authenticated product.
+   This catches empty states, modals, new screens and future UI pieces without
+   changing the public marketing pages. */
+.app-layout :is(p, li) { font-size: max(13px, .93em); line-height: 1.55; }
+.app-layout :is(small, em) { font-size: max(11px, .78em); }
+.app-layout :is(label, button, input, select, textarea) { font-size: max(12px, .86em); }
+.notifications-popover > header strong, .notifications-popover strong,
+.profile-popover strong { font-size: 13px; }
+.notifications-popover small, .profile-popover small, .mark-read,
+.profile-popover > a, .profile-popover > button, .global-toast,
+.global-modal > small, .classroom-toast { font-size: 12px; }
+.global-modal p, .classroom-modal p, .task-hint { font-size: 14px !important; }
+.conversation-menu a, .conversation-menu button, .moderation-notice,
+.conversation-empty p, .empty-inbox small, .booking-loading p { font-size: 13px; }
