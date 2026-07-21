@@ -1896,3 +1896,31 @@ h1 em, h2 em { color: var(--coral); font-weight: inherit; }
 .global-modal p, .classroom-modal p, .task-hint { font-size: 14px !important; }
 .conversation-menu a, .conversation-menu button, .moderation-notice,
 .conversation-empty p, .empty-inbox small, .booking-loading p { font-size: 13px; }
+
+/* Public journeys use the same readable scale as the product workspace. */
+.marketing-page, .search-page, .profile-page, .booking-page, .subjects-page,
+.match-page, .info-page, .investor-page, .login-page, .standalone-auth,
+.booking-loading, .route-loading {
+  font-size: 15px;
+}
+.marketing-page :is(p, li), .search-page :is(p, li), .profile-page :is(p, li),
+.booking-page :is(p, li), .subjects-page :is(p, li), .match-page :is(p, li),
+.info-page :is(p, li), .investor-page :is(p, li), .login-page :is(p, li),
+.standalone-auth :is(p, li), .booking-loading p, .route-loading {
+  font-size: max(14px, .93em);
+  line-height: 1.6;
+}
+.marketing-page :is(small, em), .search-page :is(small, em), .profile-page :is(small, em),
+.booking-page :is(small, em), .subjects-page :is(small, em), .match-page :is(small, em),
+.info-page :is(small, em), .investor-page :is(small, em), .login-page :is(small, em),
+.standalone-auth :is(small, em) { font-size: max(11px, .78em); }
+.marketing-page :is(label, button, input, select, textarea), .search-page :is(label, button, input, select, textarea),
+.profile-page :is(label, button, input, select, textarea), .booking-page :is(label, button, input, select, textarea),
+.subjects-page :is(label, button, input, select, textarea), .match-page :is(label, button, input, select, textarea),
+.info-page :is(label, button, input, select, textarea), .investor-page :is(label, button, input, select, textarea),
+.login-page :is(label, button, input, select, textarea), .standalone-auth :is(label, button, input, select, textarea) {
+  font-size: max(12px, .86em);
+}
+.search-page .tutor-card :is(.tutor-role, .tutor-quote), .profile-page .profile-role-large,
+.profile-page .profile-quote-large, .subjects-page .subject-catalog-grid p,
+.login-page .login-card > p, .standalone-auth .login-card > p { font-size: 14px; }

@@ -11,6 +11,7 @@ import { MarketingHeader } from "../../components/MarketingHeader";
 import type { Tutor } from "../../data";
 import { educationLevelLabel } from "../../lib/catalog";
 import { apiFetch } from "../../lib/api";
+import { demoAvailability } from "../../lib/demo";
 
 type APITutor = {
   userId: string;
@@ -154,7 +155,15 @@ export function TutorProfileClient({ slug, fallbackTutor }: { slug: string; fall
       }
       setError("");
     }).catch(() => {
-      if (!fallbackTutor) setError("Profil trenutačno nije dostupan. Pokušaj ponovno ili odaberi drugog mentora.");
+      if (fallbackTutor) {
+        const fallbackSlots = demoAvailability(slug);
+        setSlots(fallbackSlots);
+        setSelectedDay(dayKey(fallbackSlots[0].startsAt));
+        setSelectedSlot(fallbackSlots[0].id);
+        setError("");
+      } else {
+        setError("Profil trenutačno nije dostupan. Pokušaj ponovno ili odaberi drugog mentora.");
+      }
     }).finally(() => setLoading(false));
   }, [fallbackTutor, slug]);
 

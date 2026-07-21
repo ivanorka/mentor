@@ -5,29 +5,34 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, BookOpen, Check, GraduationCap, LoaderCircle, ShieldCheck } from "lucide-react";
 import { Brand } from "../../components/Brand";
-import { apiFetch } from "../../lib/api";
+import { apiFetch, isStandaloneDemo } from "../../lib/api";
+import { DEMO_IDENTITIES, saveDemoIdentity } from "../../lib/demo";
 
 type Identity = { id: string; email: string; name: string; role: "student" | "tutor" | "admin" };
 type AuthResult = { dashboard: string };
 function GoogleDemoContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [identities, setIdentities] = useState<Identity[]>([]);
+  const [identities, setIdentities] = useState<Identity[]>(() => isStandaloneDemo() ? DEMO_IDENTITIES : []);
   const [selected, setSelected] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !isStandaloneDemo());
   const [error, setError] = useState("");
   const requestedReturnTo = searchParams.get("returnTo");
   const returnTo = requestedReturnTo?.startsWith("/") && !requestedReturnTo.startsWith("//") ? requestedReturnTo : "/ucenik";
-  const role = returnTo.startsWith("/profesor") ? "tutor" : "student";
+  const role = searchParams.get("role") === "tutor" || returnTo.startsWith("/profesor") ? "tutor" : "student";
   const visible = useMemo(() => identities.filter((item) => item.role === role).slice(0, 5), [identities, role]);
   useEffect(() => {
-    apiFetch<Identity[]>("/demo/identities").then(({ data }) => { setIdentities(data); setLoading(false); }).catch((caught) => { setError(caught instanceof Error ? caught.message : "Demo računi se ne mogu učitati."); setLoading(false); });
+    if (isStandaloneDemo()) return;
+    apiFetch<Identity[]>("/demo/identities")
+      .then(({ data }) => setIdentities(data))
+      .catch(() => setIdentities(DEMO_IDENTITIES))
+      .finally(() => setLoading(false));
   }, []);
   const selectedEmail = visible.some((identity) => identity.email === selected) ? selected : visible[0]?.email || "";
   const login = async () => {
     if (!selectedEmail) return; setLoading(true); setError("");
     try { const { data } = await apiFetch<AuthResult>("/auth/google/demo", { method: "POST", body: JSON.stringify({ email: selectedEmail }) }); router.push(returnTo || data.dashboard); }
-    catch (caught) { setError(caught instanceof Error ? caught.message : "Demo prijava nije uspjela."); setLoading(false); }
+    catch { const session = saveDemoIdentity(selectedEmail, role); router.push(returnTo || session.dashboard); }
   };
   return <main className="standalone-auth"><Brand /><section className="login-card google-demo-card"><div className="demo-mode-notice"><ShieldCheck /> Lokalni SSO demo — Google ključevi nisu konfigurirani</div><span className="google-mark">G</span><span className="step-kicker">ODABIR GOOGLE RAČUNA</span><h1>Nastavi u Gaudeamus Mentor</h1><p>U produkciji se ovdje prikazuje službeni Google ekran. Za investitorski prototip odaberi jedan od sigurnih seed računa.</p>
     <div className="demo-role"><span>{role === "student" ? <BookOpen /> : <GraduationCap />}{role === "student" ? "Učenički prostor" : "Profesorski prostor"}</span><Link href={`/auth/google-demo?returnTo=${role === "student" ? "/profesor" : "/ucenik"}`}>Promijeni ulogu</Link></div>

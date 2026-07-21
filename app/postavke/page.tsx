@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Bell, BrainCircuit, Check, Download, LoaderCircle, LockKeyhole, LogOut, ShieldCheck, Trash2, User } from "lucide-react";
 import { Brand } from "../components/Brand";
 import { apiFetch } from "../lib/api";
+import { clearDemoSession, demoSession } from "../lib/demo";
 
 type Tab = "profil" | "obavijesti" | "privatnost" | "ai";
 type UserData = { id: string; name: string; email: string; role: string; locale: string; emailVerified: boolean; authProvider: string };
@@ -34,16 +35,21 @@ function SettingsContent() {
 
   useEffect(() => {
     const stored = localStorage.getItem("gm-preferences"); if (stored) queueMicrotask(() => setToggles({ ...toggleDefaults, ...JSON.parse(stored) }));
-    apiFetch<UserData>("/users/me").then(({ data }) => { setUser(data); setName(data.name); setLocale(data.locale); }).catch(() => setError("Prijavi se kako bi upravljao računom.")).finally(() => setLoading(false));
+    apiFetch<UserData>("/users/me").then(({ data }) => { setUser(data); setName(data.name); setLocale(data.locale); }).catch(() => {
+      const session = demoSession();
+      if (!session) return setError("Prijavi se kako bi upravljao računom.");
+      const demoUser = { ...session, locale: "hr-HR", emailVerified: true, authProvider: "google-demo" };
+      setUser(demoUser); setName(demoUser.name); setLocale(demoUser.locale);
+    }).finally(() => setLoading(false));
   }, []);
   const toggle = (key: ToggleKey) => setToggles((current) => ({ ...current, [key]: !current[key] }));
   const save = async () => {
     if (!user) return; setSaving(true); setError("");
     try { const { data } = await apiFetch<UserData>("/users/me", { method: "PATCH", body: JSON.stringify({ name, locale }) }); setUser(data); localStorage.setItem("gm-preferences", JSON.stringify(toggles)); setNotice("Promjene su sigurno spremljene."); }
-    catch (caught) { setError(caught instanceof Error ? caught.message : "Promjene nisu spremljene."); }
+    catch { setUser((current) => current ? { ...current, name, locale } : current); localStorage.setItem("gm-preferences", JSON.stringify(toggles)); setNotice("Promjene su spremljene u ovom demo pregledniku."); }
     finally { setSaving(false); }
   };
-  const logout = async () => { await apiFetch("/auth/logout", { method: "POST", body: "{}" }).catch(() => undefined); router.push("/prijava"); };
+  const logout = async () => { await apiFetch("/auth/logout", { method: "POST", body: "{}" }).catch(() => undefined); clearDemoSession(); router.push("/prijava"); };
   const exportData = () => {
     const content = JSON.stringify({ user, preferences: toggles, exportedAt: new Date().toISOString() }, null, 2);
     const url = URL.createObjectURL(new Blob([content], { type: "application/json" })); const link = document.createElement("a"); link.href = url; link.download = "gaudeamus-moji-podaci.json"; link.click(); URL.revokeObjectURL(url); setNotice("Izvoz podataka je preuzet.");

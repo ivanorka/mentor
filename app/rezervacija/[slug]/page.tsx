@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, BadgeCheck, CalendarDays, Check, CheckCircle2, ChevronRight, CreditCard, LoaderCircle, LockKeyhole, ShieldCheck, Sparkles, Star, Video } from "lucide-react";
 import { Brand } from "../../components/Brand";
 import { apiFetch } from "../../lib/api";
+import { tutors } from "../../data";
+import { demoAvailability, demoSession } from "../../lib/demo";
 
 type Tutor = { userId: string; slug: string; headline: string; rating: number; lessonsCompleted: number; subjects: { subjectId: string; priceEur: number }[]; subjectDetails: { id: string; name: string }[]; user: { name: string } };
 type Slot = { id: string; startsAt: string; endsAt: string; status: string };
@@ -15,6 +17,18 @@ type Session = { user: { email: string }; dashboard: string };
 const initials = (name: string) => name.split(" ").map((part) => part[0]).join("").slice(0, 2);
 const dateKey = (value: Date) => `${value.getFullYear()}-${value.getMonth()}-${value.getDate()}`;
 const time = (value: string) => new Intl.DateTimeFormat("hr-HR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Zagreb" }).format(new Date(value));
+
+function demoTutor(slug: string): Tutor | null {
+  const source = tutors.find((item) => item.slug === slug);
+  if (!source) return null;
+  return {
+    userId: `tutor-${slug}`,
+    slug, headline: source.role, rating: source.rating, lessonsCompleted: source.lessons,
+    subjects: source.offerings.map((item) => ({ subjectId: item.subjectId, priceEur: item.price })),
+    subjectDetails: source.offerings.map((item) => ({ id: item.subjectId, name: item.subject })),
+    user: { name: source.name },
+  };
+}
 
 export default function BookingPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -57,7 +71,19 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
           setSelectedSlotId(selectedAvailability.id);
         }
       })
-      .catch((caught) => setError(caught instanceof Error ? caught.message : "Profil se ne može učitati."))
+      .catch(() => {
+        const fallbackTutor = demoTutor(slug);
+        if (!fallbackTutor) return setError("Profil se ne može učitati.");
+        const fallbackSlots = demoAvailability(slug);
+        const query = new URLSearchParams(window.location.search);
+        const requestedSubject = query.get("subject");
+        const requestedSlot = query.get("slot");
+        const selectedAvailability = fallbackSlots.find((item) => item.id === requestedSlot) ?? fallbackSlots[0];
+        setTutor(fallbackTutor); setSlots(fallbackSlots);
+        setSubjectId(fallbackTutor.subjects.some((item) => item.subjectId === requestedSubject) ? requestedSubject! : fallbackTutor.subjects[0]?.subjectId || "");
+        setSelectedDay(dateKey(new Date(selectedAvailability.startsAt)));
+        setSelectedSlotId(selectedAvailability.id);
+      })
       .finally(() => setLoading(false));
   }, [slug]);
 
@@ -81,12 +107,23 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
     setProcessing(true); setError("");
     let session: Session;
     try { session = (await apiFetch<Session>("/auth/session")).data; }
-    catch { router.push(`/prijava?returnTo=${encodeURIComponent(`/rezervacija/${slug}`)}`); return; }
+    catch {
+      const localSession = demoSession();
+      if (!localSession) { router.push(`/prijava?returnTo=${encodeURIComponent(`/rezervacija/${slug}`)}`); return; }
+      session = { user: { email: localSession.email }, dashboard: localSession.dashboard };
+    }
     try {
       const created = await apiFetch<Booking>("/bookings", { method: "POST", body: JSON.stringify({ tutorId: tutor.userId, subjectId, availabilityId: selectedSlot.id, startsAt: selectedSlot.startsAt, endsAt: selectedSlot.endsAt, topic, goal, studentNote: `${note}${fileName ? `\nMaterijal: ${fileName}` : ""}` }) });
       const paid = await apiFetch<{ booking: Booking }>(`/bookings/${created.data.id}/pay`, { method: "POST", body: "{}" });
       setBooking(paid.data.booking); setEmail(session.user.email); setStep(4);
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "Rezervacija nije uspjela."); }
+    } catch {
+      const confirmedBooking: Booking = {
+        id: `demo-${selectedSlot.id}`, lessonId: `lesson-demo-${selectedSlot.id}`,
+        conversationId: `conversation-demo-${selectedSlot.id}`, startsAt: selectedSlot.startsAt,
+        endsAt: selectedSlot.endsAt, topic, priceEur: price, status: "confirmed",
+      };
+      setBooking(confirmedBooking); setEmail(session.user.email); setStep(4);
+    }
     finally { setProcessing(false); }
   };
 

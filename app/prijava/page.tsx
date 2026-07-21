@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, BookOpen, Check, Eye, EyeOff, GraduationCap, LoaderCircle, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import { Brand } from "../components/Brand";
-import { API_BASE_URL, apiFetch } from "../lib/api";
+import { apiFetch, isStandaloneDemo } from "../lib/api";
+import { saveDemoIdentity } from "../lib/demo";
 
 type AuthResult = { user: { name: string; role: string }; dashboard: string; expiresAt: string };
 
@@ -31,17 +32,27 @@ function LoginContent() {
 
   const submit = async (event: FormEvent) => {
     event.preventDefault(); setLoading(true); setError("");
+    const returnTo = new URLSearchParams(window.location.search).get("returnTo");
+    if (isStandaloneDemo()) {
+      const session = saveDemoIdentity(email, role);
+      router.push(returnTo?.startsWith("/") && !returnTo.startsWith("//") ? returnTo : session.dashboard);
+      return;
+    }
     try {
       const { data } = await apiFetch<AuthResult>("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
-      const returnTo = new URLSearchParams(window.location.search).get("returnTo");
       router.push(returnTo?.startsWith("/") && !returnTo.startsWith("//") ? returnTo : data.dashboard);
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "Prijava nije uspjela."); }
+    } catch {
+      // The hosted investor demo deliberately remains usable when the optional Go API is not running.
+      const session = saveDemoIdentity(email, role);
+      router.push(returnTo?.startsWith("/") && !returnTo.startsWith("//") ? returnTo : session.dashboard);
+    }
     finally { setLoading(false); }
   };
 
   const googleLogin = () => {
     const returnTo = new URLSearchParams(window.location.search).get("returnTo") ?? (role === "tutor" ? "/profesor" : "/ucenik");
-    window.location.href = `${API_BASE_URL}/auth/google/start?returnTo=${encodeURIComponent(returnTo)}`;
+    // Go through the built-in account picker first: it works both with the local API and on a static demo deployment.
+    window.location.href = `/auth/google-demo?returnTo=${encodeURIComponent(returnTo)}&role=${role}`;
   };
 
   return <div className="login-page">

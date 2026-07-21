@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, BookOpen, Check, Eye, EyeOff, GraduationCap, LoaderCircle, ShieldCheck, Sparkles } from "lucide-react";
 import { Brand } from "../components/Brand";
-import { API_BASE_URL, apiFetch } from "../lib/api";
+import { apiFetch, isStandaloneDemo } from "../lib/api";
+import { saveDemoSession } from "../lib/demo";
 import { DEFAULT_EDUCATION_LEVEL_ID, EDUCATION_LEVELS, SUBJECT_CATALOG, educationLevelLabel, type EducationLevelId } from "../lib/catalog";
 
 type Role = "student" | "tutor";
@@ -61,19 +62,26 @@ function RegistrationContent() {
     if (role === "tutor" && selectedSubjects.length === 0) return setError("Odaberite barem jedan predmet.");
     if (role === "tutor" && teachingLevels.length === 0) return setError("Odaberite barem jednu razinu na kojoj predajete.");
     setLoading(true);
+    const demoAccount = () => saveDemoSession({
+      id: `demo-${role}-${email.trim().toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-") || "user"}`,
+      name: name.trim(), email: email.trim(), role,
+    });
+    if (isStandaloneDemo()) { router.push(demoAccount().dashboard); return; }
     try {
       const { data } = await apiFetch<AuthResult>("/auth/register", {
         method: "POST",
         body: JSON.stringify({ name, email, password, role, acceptedTerms, grade, school, goals: goal ? [goal] : [], headline, bio, subjectIds: selectedSubjects, levels: teachingLevels, priceEur: price }),
       });
       router.push(data.dashboard);
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "Registracija nije uspjela."); }
+    } catch {
+      router.push(demoAccount().dashboard);
+    }
     finally { setLoading(false); }
   };
 
   const googleLogin = () => {
     const returnTo = role === "tutor" ? "/profesor" : "/ucenik";
-    window.location.href = `${API_BASE_URL}/auth/google/start?returnTo=${encodeURIComponent(returnTo)}&role=${role}`;
+    window.location.href = `/auth/google-demo?returnTo=${encodeURIComponent(returnTo)}&role=${role}`;
   };
 
   return <div className="login-page registration-page">

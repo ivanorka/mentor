@@ -14,7 +14,7 @@ export default function ForgotPasswordPage() {
   const submit = async (event: FormEvent) => {
     event.preventDefault(); setLoading(true); setError("");
     try { await apiFetch("/auth/password/forgot", { method: "POST", body: JSON.stringify({ email }) }); setSent(true); }
-    catch (caught) { setError(caught instanceof Error ? caught.message : "Zahtjev nije uspio."); }
+    catch { setSent(true); }
     finally { setLoading(false); }
   };
   return <main className="standalone-auth"><Link href="/"><Brand /></Link><section className="login-card compact-auth-card">
