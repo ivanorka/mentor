@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Braces, FlaskConical, Globe2, Languages, LoaderCircle, Sigma, Sparkles } from "lucide-react";
 import { MarketingHeader } from "../components/MarketingHeader";
+import { SiteFooter } from "../components/SiteFooter";
 import { apiFetch } from "../lib/api";
 import {
   DEFAULT_EDUCATION_LEVEL_ID,
@@ -59,7 +60,6 @@ export default function SubjectsPage() {
   const [category, setCategory] = useState("Sve");
   const [level, setLevel] = useState<LevelFilter>(DEFAULT_EDUCATION_LEVEL_ID);
   const [loading, setLoading] = useState(true);
-  const [live, setLive] = useState(false);
 
   useEffect(() => {
     apiFetch<APISubject[]>("/subjects")
@@ -84,9 +84,8 @@ export default function SubjectsPage() {
             };
           }));
         }
-        setLive(true);
       })
-      .catch(() => setLive(false))
+      .catch(() => undefined)
       .finally(() => setLoading(false));
   }, []);
 
@@ -101,7 +100,7 @@ export default function SubjectsPage() {
       <MarketingHeader inverse />
       <section className="subjects-hero">
         <div className="container subjects-hero-inner">
-          <div><span className="api-live-pill"><i className={live ? "online" : "offline"} /> {live ? "Podaci uživo iz Go API-ja" : "Demo podaci"}</span><h1>Predmeti za svaki<br /><em>sljedeći korak.</em></h1><p>Od prve nejasne lekcije do mature i fakulteta — pronađi mentora koji poznaje tvoju razinu, cilj i način učenja.</p></div>
+          <div><span className="eyebrow eyebrow-light"><span /> Znanje za svaki sljedeći korak</span><h1>Predmeti za svaki<br /><em>sljedeći korak.</em></h1><p>Od prve nejasne lekcije do mature i fakulteta — pronađi mentora koji poznaje tvoju razinu, cilj i način učenja.</p></div>
           <div className="subjects-orbit"><Sparkles /><strong>{subjects.length}</strong><span>područja znanja</span><small>Jedna platforma · jedan profil napretka</small></div>
         </div>
       </section>
@@ -111,6 +110,7 @@ export default function SubjectsPage() {
           {visible.map((subject, index) => { const Icon = subjectIcons[subject.icon]; const levelQuery = level === "sve" ? "" : `&level=${level}`; return <article key={subject.id}><span className={`subject-icon tone-${index % 4}`}><Icon /></span><small>{subject.category}</small><h2>{subject.name}</h2><p>{subject.description}</p><div className="subject-levels">{subject.levelIds.map((item) => <span key={item}>{educationLevelLabel(item)}</span>)}</div><footer><strong>{subject.tutorCount} mentora</strong><Link href={`/pronadi-profesora?subject=${subject.slug}${levelQuery}`}>Pronađi mentora <ArrowRight /></Link></footer></article>; })}
         </div>
       </main>
+      <SiteFooter />
     </div>
   );
 }

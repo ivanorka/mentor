@@ -8,6 +8,7 @@ import {
   RotateCcw, ShieldCheck, Sparkles, Star, Users, Video,
 } from "lucide-react";
 import { MarketingHeader } from "../../components/MarketingHeader";
+import { SiteFooter } from "../../components/SiteFooter";
 import type { Tutor } from "../../data";
 import { educationLevelLabel } from "../../lib/catalog";
 import { apiFetch } from "../../lib/api";
@@ -137,6 +138,7 @@ export function TutorProfileClient({ slug, fallbackTutor }: { slug: string; fall
   const [selectedDay, setSelectedDay] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
   const [saved, setSaved] = useState(false);
+  const [activeSection, setActiveSection] = useState("o-meni");
 
   useEffect(() => {
     const favorites = JSON.parse(localStorage.getItem("gm-favorite-tutors") || "[]") as string[];
@@ -167,6 +169,18 @@ export function TutorProfileClient({ slug, fallbackTutor }: { slug: string; fall
     }).finally(() => setLoading(false));
   }, [fallbackTutor, slug]);
 
+  useEffect(() => {
+    const sectionIds = ["o-meni", "pristup", "recenzije", "obrazovanje"];
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((first, second) => second.intersectionRatio - first.intersectionRatio)[0];
+      if (visible) setActiveSection(visible.target.id);
+    }, { rootMargin: "-20% 0px -60% 0px", threshold: [0.1, 0.35, 0.6] });
+    sectionIds.forEach((id) => document.getElementById(id) && observer.observe(document.getElementById(id)!));
+    return () => observer.disconnect();
+  }, [profile]);
+
   const days = useMemo(() => Array.from(new Map(slots.map((slot) => [dayKey(slot.startsAt), slot])).entries()).slice(0, 5), [slots]);
   const daySlots = slots.filter((slot) => dayKey(slot.startsAt) === selectedDay);
   const chosenSlot = slots.find((slot) => slot.id === selectedSlot) ?? daySlots[0];
@@ -185,7 +199,7 @@ export function TutorProfileClient({ slug, fallbackTutor }: { slug: string; fall
   };
 
   if (loading && !profile) return <main className="booking-loading"><LoaderCircle className="spin" /><p>Učitavamo provjereni profil mentora…</p></main>;
-  if (!profile) return <><MarketingHeader /><main className="booking-loading"><h1>Mentor nije pronađen</h1><p>{error}</p><Link className="button button-coral" href="/pronadi-profesora">Pronađi drugog mentora</Link></main></>;
+  if (!profile) return <div className="profile-page"><MarketingHeader /><main className="booking-loading"><h1>Mentor nije pronađen</h1><p>{error}</p><Link className="button button-coral" href="/pronadi-profesora">Pronađi drugog mentora</Link></main><SiteFooter /></div>;
 
   return (
     <div className="profile-page">
@@ -208,7 +222,7 @@ export function TutorProfileClient({ slug, fallbackTutor }: { slug: string; fall
           <section className="profile-metric-grid">
             <div><Star fill="currentColor" /><strong>{profile.rating.toFixed(2)}</strong><span>{profile.reviewCount} recenzija</span></div><div><BookOpen /><strong>{profile.lessons.toLocaleString("hr-HR")}</strong><span>održanih sati</span></div><div><Users /><strong>{profile.students}</strong><span>učenika</span></div><div><RotateCcw /><strong>{profile.repeatRate}%</strong><span>ponovno rezervira</span></div><div><Clock3 /><strong>{profile.responseMinutes} min</strong><span>vrijeme odgovora</span></div>
           </section>
-          <nav className="profile-tabs"><a href="#o-meni" className="active">O meni</a><a href="#pristup">Način rada</a><a href="#recenzije">Recenzije</a><a href="#obrazovanje">Obrazovanje</a></nav>
+          <nav className="profile-tabs" aria-label="Sadržaj profila">{[["o-meni", "O meni"], ["pristup", "Način rada"], ["recenzije", "Recenzije"], ["obrazovanje", "Obrazovanje"]].map(([id, label]) => <a href={`#${id}`} className={activeSection === id ? "active" : ""} onClick={() => setActiveSection(id)} key={id}>{label}</a>)}</nav>
           <section className="profile-section" id="o-meni"><div className="section-mini-title"><span>01</span><h2>O meni</h2></div><p>{profile.bio}</p><p>Rad prilagođavam razini, cilju i načinu učenja svakog učenika. Nakon sata ostaju jasni sljedeći koraci, materijali i AI podrška za samostalno ponavljanje.</p><div className="profile-language-row"><strong>Jezici rada</strong>{profile.languages.map((language) => <span key={language}>{language}</span>)}</div></section>
           <section className="profile-section" id="pristup"><div className="section-mini-title"><span>02</span><h2>Kako izgleda moj sat</h2></div><div className="method-grid">{methods.map((method, index) => <div key={method}><span>{index + 1}</span><h3>{method}</h3><p>{index === 0 ? "Prvih nekoliko minuta utvrđujemo cilj i točnu točku blokade." : index === 1 ? "Učenik aktivno radi, a objašnjenje se prilagođava u stvarnom vremenu." : "Sat završava provjerom, preporukom i materijalima za nastavak."}</p></div>)}</div></section>
           <section className="profile-section" id="recenzije"><div className="section-mini-title"><span>03</span><h2>Što kažu učenici</h2></div><div className="reviews-summary"><strong>{profile.rating.toFixed(2)}</strong><span><span className="stars">★★★★★</span><small>Na temelju {profile.reviewCount} provjerenih sati</small></span><div className="rating-bars"><span>5 <i><b style={{ width: "94%" }} /></i> 94%</span><span>4 <i><b style={{ width: "5%" }} /></i> 5%</span><span>3 <i><b style={{ width: "1%" }} /></i> 1%</span></div></div><div className="review-grid">{(reviews.length ? reviews.slice(0, 2) : [{ id: "demo-1", rating: 5, comment: `Napokon razumijem ${primaryOffering?.subject.toLocaleLowerCase("hr-HR") ?? "gradivo"}, a zadaci nakon sata pogodili su baš ono gdje griješim.`, createdAt: "2026-07-18T10:00:00Z" }, { id: "demo-2", rating: 5, comment: "Jasno, smireno i bez preskakanja koraka. Već nakon nekoliko sati vidim stvaran napredak.", createdAt: "2026-07-12T10:00:00Z" }]).map((review) => <article key={review.id}><Quote /><p>“{review.comment}”</p><strong>Provjereni učenik</strong><span>{new Date(review.createdAt).toLocaleDateString("hr-HR", { day: "numeric", month: "long", year: "numeric" })}</span></article>)}</div></section>
@@ -225,6 +239,7 @@ export function TutorProfileClient({ slug, fallbackTutor }: { slug: string; fall
           </div>
         </aside>
       </main>
+      <SiteFooter />
     </div>
   );
 }

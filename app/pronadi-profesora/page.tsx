@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, MapPin, Search, SlidersHorizontal, Sparkles, Star, X } from "lucide-react";
 import { MarketingHeader } from "../components/MarketingHeader";
+import { SiteFooter } from "../components/SiteFooter";
 import { TutorCard } from "../components/TutorCard";
 import { tutors, type Tutor } from "../data";
 import { apiFetch } from "../lib/api";
@@ -121,7 +122,6 @@ export default function TutorSearchPage() {
   const [liveTutors, setLiveTutors] = useState<Tutor[]>(tutors);
   const [subjects, setSubjects] = useState<SubjectOption[]>(SUBJECT_CATALOG.map(({ id, slug, name }) => ({ id, slug, name })));
   const [matchContext, setMatchContext] = useState<MatchContext>({ enabled: false, goal: "", style: "" });
-  const [apiState, setApiState] = useState<"loading" | "live" | "fallback">("loading");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -138,6 +138,10 @@ export default function TutorSearchPage() {
       if (requestedMaxPrice >= 10 && requestedMaxPrice <= 60) setMaxPrice(requestedMaxPrice);
       setMatchContext({ enabled: params.get("match") === "1", goal: params.get("goal") ?? "", style: params.get("style") ?? "" });
     });
+
+    if (params.get("focus") === "results") {
+      window.setTimeout(() => document.getElementById("search-results-anchor")?.scrollIntoView({ block: "start", behavior: "auto" }), 80);
+    }
 
     Promise.all([apiFetch<APITutor[]>("/tutors?limit=50"), apiFetch<APISubject[]>("/subjects")])
       .then(([tutorResult, subjectResult]) => {
@@ -173,9 +177,9 @@ export default function TutorSearchPage() {
           };
         }));
         if (subjectResult.data.length) setSubjects(subjectResult.data);
-        setApiState("live");
+        // Seed data remains a graceful fallback if the API is unavailable.
       })
-      .catch(() => setApiState("fallback"));
+      .catch(() => undefined);
   }, []);
 
   const filtered = useMemo(() => {
@@ -222,7 +226,7 @@ export default function TutorSearchPage() {
       <div className="search-hero">
         <div className="container">
           <div className="search-title-row">
-            <div><div className="eyebrow"><span /> Provjereni Gaudeamus mentori · {apiState === "live" ? "API uživo" : apiState === "loading" ? "učitavanje" : "demo način"}</div><h1>Pronađi osobu koja će<br /><em>otključati tvoje znanje.</em></h1></div>
+            <div><div className="eyebrow eyebrow-light"><span /> Provjereni Gaudeamus mentori</div><h1>Pronađi osobu koja će<br /><em>otključati tvoje znanje.</em></h1></div>
             <div className="search-promise"><Sparkles /><span><strong>{matchContext.enabled ? "Tvoj Mentor Match je spreman" : "Pametno podudaranje"}</strong><small>{matchContext.enabled ? "Svaki rezultat ima izračun i jasne razloge preporuke." : "Rangiramo mentore prema tvojoj razini, cilju i načinu učenja."}</small></span></div>
           </div>
           <div className="search-bar-large">
@@ -232,7 +236,7 @@ export default function TutorSearchPage() {
           </div>
         </div>
       </div>
-      <div className="container search-layout">
+      <div className="container search-layout" id="search-results-anchor">
         <button className="mobile-filter-trigger" onClick={() => setFiltersOpen(!filtersOpen)}><SlidersHorizontal /> Filteri {activeCount > 0 && <span>{activeCount}</span>}</button>
         {filtersOpen && <button className="filter-backdrop" aria-label="Zatvori filtre" onClick={() => setFiltersOpen(false)} />}
         <aside className={`filters-panel ${filtersOpen ? "open" : ""}`}>
@@ -252,6 +256,7 @@ export default function TutorSearchPage() {
           <div className="search-help"><MapPin /><span><strong>Trebaš pomoć pri odabiru?</strong><small>Odgovori na 5 kratkih pitanja i preporučit ćemo ti tri mentora.</small></span><Link href="/mentor-match">Pokreni mentor match <ChevronRight size={16} /></Link></div>
         </main>
       </div>
+      <SiteFooter />
     </div>
   );
 }

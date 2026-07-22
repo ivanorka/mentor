@@ -55,7 +55,28 @@ h1 em, h2 em { color: var(--coral); font-weight: inherit; }
 .marketing-header { position: relative; z-index: 20; height: 86px; }
 .header-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; }
 .marketing-nav { display: flex; align-items: center; gap: 30px; }
-.marketing-nav a { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; }
+.marketing-nav a { position: relative; display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; }
+.marketing-nav a.active::after { position: absolute; right: 0; bottom: -12px; left: 0; height: 2px; content: ""; border-radius: 2px; background: var(--coral); }
+.guidance-menu { position: relative; }.guidance-trigger { position: relative; display: inline-flex; align-items: center; gap: 5px; padding: 0; color: inherit; border: 0; background: transparent; font-size: 13px; font-weight: 600; cursor: pointer; }.guidance-trigger svg { width: 15px; transition: transform .2s ease; }.guidance-menu.open .guidance-trigger svg { transform: rotate(180deg); }.guidance-trigger.active::after { position: absolute; right: 0; bottom: -12px; left: 0; height: 2px; content: ""; border-radius: 2px; background: var(--coral); }
+.guidance-dropdown { position: absolute; top: calc(100% + 21px); left: 50%; display: grid; min-width: 175px; padding: 7px; visibility: hidden; opacity: 0; border: 1px solid rgba(255,255,255,.13); border-radius: 13px; background: white; box-shadow: 0 18px 45px rgba(7,14,43,.2); transform: translate(-50%, -6px); transition: opacity .18s ease, transform .18s ease, visibility .18s ease; }.guidance-menu.open .guidance-dropdown { visibility: visible; opacity: 1; transform: translate(-50%, 0); }.guidance-dropdown a { padding: 10px 11px; color: var(--ink) !important; border-radius: 8px; font-size: 13px; font-weight: 700; }.guidance-dropdown a:hover { color: var(--blue) !important; background: #edf3fb; }
+.marketing-header .guidance-trigger { font-size: 15px; }
+.guidance-dropdown a.active { color: var(--ink) !important; background: #edf3fb; }
+.guidance-dropdown a.active::after { display: none; }
+
+/* Header navigation forms one clean right-aligned action group. */
+.header-inner { gap: 26px; }
+.marketing-nav { margin-left: auto; }
+.header-actions { flex: 0 0 auto; }
+.header-login-link { display: inline-flex; align-items: center; gap: 7px; min-height: 38px; padding-left: 16px; border-left: 1px solid rgba(255,255,255,.16); }
+.header-login-link svg { display: block; width: 17px; height: 17px; flex: 0 0 auto; }
+.marketing-header:not(.marketing-header-inverse) .header-login-link { border-left-color: var(--line); }
+
+/* Guidance is a first-class navigation item, not a differently coloured button. */
+.marketing-header .guidance-trigger { min-height: 38px; color: inherit; font-size: 15px; font-weight: 600; line-height: 1; }
+.marketing-header-inverse .guidance-trigger { color: rgba(255,255,255,.78) !important; }
+.marketing-header:not(.marketing-header-inverse) .guidance-trigger { color: var(--ink); }
+.marketing-header-inverse .guidance-trigger.active { color: rgba(255,255,255,.92) !important; }
+.marketing-header:not(.marketing-header-inverse) .guidance-trigger.active { color: var(--ink); }
 .marketing-header-inverse .marketing-nav a, .marketing-header-inverse .text-link { color: rgba(255,255,255,.78); }
 .header-actions { display: flex; align-items: center; gap: 18px; }
 .text-link { font-size: 13px; font-weight: 700; }
@@ -166,41 +187,41 @@ h1 em, h2 em { color: var(--coral); font-weight: inherit; }
 .learning-loop-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 100px; align-items: center; }
 .loop-copy > p { max-width: 520px; margin: 28px 0; color: var(--muted); font-size: 15px; line-height: 1.75; }
 .loop-list { display: grid; gap: 9px; margin: 28px 0; }
-.loop-list > div { display: grid; grid-template-columns: 38px 1fr; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid transparent; border-radius: 12px; }
+.loop-list > div { display: grid; grid-template-columns: 42px 1fr; gap: 14px; align-items: center; padding: 13px 14px; border: 1px solid transparent; border-radius: 12px; }
 .loop-list > div.active { border-color: #dce3f3; background: #f8faff; }
-.loop-list > div > span { display: grid; width: 32px; height: 32px; place-items: center; color: var(--muted); border-radius: 10px; background: var(--cloud); font-size: 9px; font-weight: 800; }
+.loop-list > div > span { display: grid; width: 36px; height: 36px; place-items: center; color: var(--muted); border-radius: 11px; background: var(--cloud); font-size: 11px; font-weight: 800; }
 .loop-list .active > span { color: white; background: var(--blue); }
 .loop-list p { display: flex; flex-direction: column; margin: 0; }
-.loop-list strong { font-size: 12px; }
-.loop-list small { margin-top: 4px; color: var(--muted); font-size: 10px; line-height: 1.45; }
-.inline-link { display: inline-flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 800; }
+.loop-list strong { font-size: 15px; }
+.loop-list small { margin-top: 5px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.inline-link { display: inline-flex; align-items: center; gap: 8px; color: var(--blue); font-size: 14px; font-weight: 800; }
 .knowledge-card-stack { position: relative; min-height: 515px; }
 .knowledge-card { position: absolute; border: 1px solid #dfe4ee; border-radius: 22px; background: white; box-shadow: var(--shadow); }
 .back-card, .mid-card { display: flex; flex-direction: column; padding: 24px; }
-.back-card span, .mid-card span { color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .1em; }
+.back-card span, .mid-card span { color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .08em; }
 .back-card strong, .mid-card strong { margin-top: 8px; font-family: var(--font-playfair), Georgia, serif; font-size: 28px; }
-.back-card small, .mid-card small { color: var(--muted); font-size: 9px; }
+.back-card small, .mid-card small { color: var(--muted); font-size: 11px; }
 .back-card { right: 0; bottom: 38px; width: 210px; height: 160px; transform: rotate(7deg); }
 .mid-card { top: 28px; left: 72px; width: 215px; height: 150px; transform: rotate(-7deg); }
 .main-card { z-index: 2; top: 90px; left: 25px; width: min(480px, 92%); padding: 25px; transform: rotate(-.8deg); }
 .knowledge-head { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
 .knowledge-head > span:nth-child(2) { display: flex; flex-direction: column; }
-.knowledge-head small { color: var(--blue); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
-.knowledge-head strong { margin-top: 4px; font-size: 13px; }
-.knowledge-head em { color: var(--muted); font-size: 9px; font-style: normal; }
+.knowledge-head small { color: var(--blue); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; }
+.knowledge-head strong { margin-top: 4px; font-size: 16px; }
+.knowledge-head em { color: var(--muted); font-size: 11px; font-style: normal; }
 .knowledge-progress { position: relative; height: 4px; margin: 24px 0 29px; border-radius: 4px; background: #e9edf5; }
 .knowledge-progress > span { position: absolute; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--blue), #36b8a0); }
-.knowledge-progress small { position: absolute; top: 10px; color: var(--muted); font-size: 8px; }
+.knowledge-progress small { position: absolute; top: 10px; color: var(--muted); font-size: 11px; }
 .concept-list { display: grid; gap: 7px; margin-top: 20px; }
-.concept-list p { display: grid; grid-template-columns: auto 1fr auto; gap: 9px; align-items: center; margin: 0; padding: 11px 12px; border-radius: 10px; background: var(--cloud); font-size: 10px; }
+.concept-list p { display: grid; grid-template-columns: auto 1fr auto; gap: 9px; align-items: center; margin: 0; padding: 12px; border-radius: 10px; background: var(--cloud); font-size: 13px; }
 .concept-list p svg { width: 15px; color: var(--mint); }
-.concept-list p strong { color: var(--mint); font-size: 8px; }
+.concept-list p strong { color: var(--mint); font-size: 11px; }
 .concept-list p.focus { background: #fff7e5; }
 .concept-list p.focus svg, .concept-list p.focus strong { color: #b87800; }
 .next-step { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; margin-top: 15px; padding: 13px; color: white; border-radius: 12px; background: var(--navy); }
 .next-step > span { display: flex; flex-direction: column; }
-.next-step small { color: rgba(255,255,255,.5); font-size: 8px; }
-.next-step strong { margin-top: 3px; font-size: 10px; }
+.next-step small { color: rgba(255,255,255,.5); font-size: 11px; }
+.next-step strong { margin-top: 3px; font-size: 13px; }
 .reputation-section { position: relative; overflow: hidden; color: white; background: var(--navy); }
 .reputation-section::before { position: absolute; top: -220px; right: -90px; width: 520px; height: 520px; content: ""; border: 1px solid rgba(255,255,255,.06); border-radius: 50%; box-shadow: 0 0 0 70px rgba(255,255,255,.015), 0 0 0 140px rgba(255,255,255,.01); }
 .light-heading h2 { color: white; }
@@ -2158,9 +2179,372 @@ h1 em, h2 em { color: var(--coral); font-weight: inherit; }
 @media (min-width: 981px) {
   .search-page .marketing-header { height: 86px; min-height: 86px; }
   .search-page .search-hero {
-    padding: 180px 0 76px;
-    background: radial-gradient(circle at 78% 35%, rgba(70,102,184,.45), transparent 32%), var(--navy);
+    min-height: 455px;
+    padding: 170px 0 70px;
+    background: linear-gradient(125deg, var(--navy), #183675);
   }
+  .search-page .search-hero::after { top: -45%; right: -5%; width: 560px; height: 560px; }
   .search-page .search-title-row { margin-top: 0; }
   .search-page .search-title-row h1 { font-size: clamp(52px, 7vw, 80px); line-height: .98; }
+}
+
+/* One public hero system: the Subjects treatment is the visual reference for
+   every informational route, so navigation never changes the page's scale or
+   atmosphere. */
+.info-hero,
+.investor-hero {
+  position: relative;
+  min-height: 455px;
+  overflow: hidden;
+  padding: 170px 0 70px;
+  background: linear-gradient(125deg, var(--navy), #183675);
+}
+.info-hero::after,
+.investor-hero::after {
+  position: absolute;
+  top: -45%;
+  right: -5%;
+  width: 560px;
+  height: 560px;
+  content: "";
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 50%;
+  box-shadow: 0 0 0 75px rgba(255,255,255,.025), 0 0 0 150px rgba(255,255,255,.015);
+}
+.info-hero .container,
+.investor-hero .container { position: relative; z-index: 1; }
+.info-hero h1,
+.investor-hero h1 {
+  font-size: clamp(52px, 7vw, 80px);
+  line-height: .98;
+}
+.info-hero p,
+.investor-hero p { font-size: 15px; }
+
+@media (max-width: 980px) {
+  .info-hero,
+  .investor-hero { padding: 148px 0 70px; }
+}
+
+@media (max-width: 700px) {
+  .info-hero,
+  .investor-hero { min-height: 390px; padding: 126px 0 48px; }
+  .info-hero h1,
+  .investor-hero h1 { font-size: clamp(38px, 11vw, 50px); }
+}
+
+/* The marketplace and catalog use the same headline scale as the information
+   journeys, with room for their extra search controls below. */
+.subjects-hero h1,
+.search-page .search-title-row h1 { font-size: clamp(52px, 7vw, 80px); line-height: .98; }
+@media (max-width: 700px) {
+  .subjects-hero h1,
+  .search-page .search-title-row h1 { font-size: clamp(38px, 11vw, 50px); line-height: 1; }
+}
+
+/* Dashboard review screens are presentation views too: labels, tables and
+   secondary actions stay readable without zooming. */
+.app-layout .dashboard-panel .panel-heading > div > span,
+.app-layout .dashboard-panel .focus-topic > span,
+.app-layout .dashboard-panel .lesson-row small,
+.app-layout .dashboard-panel .week-circles small,
+.app-layout .dashboard-panel .schedule-row small,
+.app-layout .dashboard-panel .transaction-head,
+.app-layout .dashboard-panel .transaction-row,
+.app-layout .dashboard-panel .large-bar-chart :is(span, small) { font-size: 12px; }
+.app-layout .dashboard-panel .panel-heading h3 { font-size: 21px; }
+.app-layout .dashboard-panel .progress-score > div:nth-child(2) > strong,
+.app-layout .dashboard-panel .focus-topic h4,
+.app-layout .dashboard-panel .lesson-row strong,
+.app-layout .dashboard-panel .schedule-row strong,
+.app-layout .dashboard-panel .transaction-row > span:nth-child(2) strong { font-size: 15px; }
+.app-layout .dashboard-panel .topic-progress :is(span, strong),
+.app-layout .dashboard-panel .focus-tasks p,
+.app-layout .dashboard-panel .weekly-plan > p,
+.app-layout .dashboard-panel .panel-heading > a,
+.app-layout .dashboard-panel .panel-heading select { font-size: 13px; }
+.app-layout .dashboard-panel .focus-topic p,
+.app-layout .dashboard-panel .lesson-row em { font-size: 13px; }
+.app-layout .dashboard-panel .score-ring small,
+.app-layout .dashboard-panel .reputation-score-ring small { font-size: 11px; }
+.demo-account-label { color: var(--blue); font-size: 13px; font-weight: 800; }
+
+/* The lesson pack is a primary study surface, so its knowledge-map labels and
+   supporting cards need the same comfortable reading scale as the dashboard. */
+.lesson-pack-main .pack-title small,
+.lesson-pack-main .concept-cards > div > span,
+.lesson-pack-main .task-list article > span,
+.lesson-pack-main .quiz-card > div small,
+.lesson-pack-main .recording-screen > span,
+.lesson-pack-main .chapters > strong { font-size: 11px; }
+.lesson-pack-main .concept-cards h4 { font-size: 15px; }
+.lesson-pack-main .concept-cards p,
+.lesson-pack-main .task-list p,
+.lesson-pack-main .quiz-card p { font-size: 14px; line-height: 1.55; }
+.lesson-pack-main .task-list button,
+.lesson-pack-main .pack-section > .button,
+.lesson-pack-main .quiz-card > a,
+.lesson-pack-main .chapters button { font-size: 13px; }
+.lesson-pack-aside .pack-mentor small,
+.lesson-pack-aside .pack-mentor em,
+.lesson-pack-aside .next-recommend > small,
+.lesson-pack-aside .next-recommend > span,
+.lesson-pack-aside .pack-streak small { font-size: 11px; }
+.lesson-pack-aside .pack-mentor strong,
+.lesson-pack-aside .pack-streak strong { font-size: 14px; }
+.lesson-pack-aside .next-recommend h3 { font-size: 21px; line-height: 1.15; }
+.lesson-pack-aside .next-recommend p { font-size: 13px; line-height: 1.55; }
+.lesson-pack-aside .next-recommend > a { font-size: 13px; }
+
+/* Keep account controls above the dashboard's visual cards and decorative
+   layers when their popovers are open. */
+.app-topbar { position: relative; z-index: 60; }
+.app-top-actions, .session-controls { position: relative; z-index: 61; }
+.notifications-popover, .profile-popover { z-index: 70; }
+.app-content { position: relative; z-index: 1; }
+
+/* Responsive marketing shell: the menu remains usable at every breakpoint,
+   while the landing composition becomes a deliberate single-column story. */
+@media (max-width: 1050px) {
+  .marketing-header.menu-open { z-index: 120; color: var(--ink); background: white; box-shadow: 0 16px 35px rgba(13,22,65,.14); }
+  .marketing-header.menu-open .brand-copy strong { color: var(--ink); }
+  .marketing-header.menu-open .marketing-nav,
+  .marketing-header.menu-open .header-actions { display: grid; position: absolute; right: 0; left: 0; background: white; }
+  .marketing-header.menu-open .marketing-nav { top: 86px; gap: 0; padding: 10px 18px 0; border-top: 1px solid var(--line); }
+  .marketing-header.menu-open .marketing-nav > a,
+  .marketing-header.menu-open .guidance-trigger { min-height: 51px; padding: 0 4px; color: var(--ink) !important; border-bottom: 1px solid var(--line); font-size: 16px; text-align: left; }
+  .marketing-header.menu-open .guidance-menu { display: grid; }
+  .marketing-header.menu-open .guidance-trigger { justify-content: space-between; width: 100%; }
+  .marketing-header.menu-open .guidance-trigger::after,
+  .marketing-header.menu-open .marketing-nav a::after { display: none; }
+  .marketing-header.menu-open .guidance-dropdown { position: static; display: none; min-width: 0; padding: 4px 0 8px 12px; visibility: visible; opacity: 1; border: 0; border-radius: 0; box-shadow: none; transform: none; }
+  .marketing-header.menu-open .guidance-menu.open .guidance-dropdown { display: grid; }
+  .marketing-header.menu-open .guidance-dropdown a { min-height: 43px; padding: 11px 12px; color: var(--muted) !important; font-size: 14px; }
+  .marketing-header.menu-open .header-actions { top: auto; padding: 0 18px 14px; border-radius: 0 0 14px 14px; }
+  .marketing-header.menu-open .header-login-link { display: inline-flex; min-height: 52px; padding-left: 4px; color: var(--ink) !important; border-left: 0; font-size: 16px; }
+  .marketing-header.menu-open .mobile-menu { color: var(--navy) !important; }
+}
+
+@media (max-width: 780px) {
+  .marketing-page .hero { min-height: 0; padding-bottom: 66px; }
+  .marketing-page .hero-grid { min-height: 0; gap: 42px; padding-top: 44px; }
+  .marketing-page .hero-copy { text-align: left; }
+  .marketing-page .hero-copy .eyebrow,
+  .marketing-page .hero-proof { justify-content: flex-start; }
+  .marketing-page .hero-copy h1 { font-size: clamp(42px, 13vw, 56px); }
+  .marketing-page .hero-copy > p { margin: 24px 0; font-size: 16px; line-height: 1.65; }
+  .marketing-page .hero-search { width: 100%; padding: 6px; }
+  .marketing-page .hero-search label { min-height: 66px; padding: 8px 15px; }
+  .marketing-page .hero-search button { min-height: 55px; width: 100%; }
+  .marketing-page .hero-product { width: min(440px, 100%); min-height: 510px; margin-inline: auto; }
+  .marketing-page .hero-profile-card { top: 57px; right: 0; width: min(385px, 94%); }
+  .marketing-page .floating-pill-top { top: 0; left: 0; right: auto; max-width: 90%; }
+  .marketing-page .floating-ai-card { right: auto; bottom: 0; left: 0; width: min(315px, 92%); }
+  .marketing-page .profile-visual { height: 205px; }
+  .marketing-page .section { padding: 74px 0; }
+  .marketing-page .heading-with-action .button { width: 100%; }
+  .marketing-page .learning-loop-grid { gap: 46px; }
+  .marketing-page .knowledge-card-stack { min-height: 455px; width: min(470px, 100%); margin-inline: auto; }
+  .marketing-page .professor-cta { gap: 48px; }
+  .marketing-page .earnings-card { transform: none; }
+  .marketing-page .final-cta { padding: 78px 0; }
+}
+
+@media (max-width: 520px) {
+  .marketing-header { height: 76px; }
+  .marketing-header.menu-open .marketing-nav { top: 76px; }
+  .marketing-page .hero-grid { padding-top: 30px; }
+  .marketing-page .hero-copy h1 { font-size: clamp(40px, 12vw, 48px); }
+  .marketing-page .hero-proof { gap: 12px; }
+  .marketing-page .hero-proof strong { font-size: 14px; }
+  .marketing-page .hero-proof small { font-size: 11px; }
+  .marketing-page .hero-product { min-height: 485px; }
+  .marketing-page .floating-pill { padding: 9px 11px; font-size: 11px; }
+  .marketing-page .hero-profile-card { top: 51px; width: 96%; border-radius: 19px; transform: none; }
+  .marketing-page .profile-visual { height: 168px; }
+  .marketing-page .hero-avatar { width: 88px; height: 88px; font-size: 29px; }
+  .marketing-page .profile-card-body { padding: 17px; }
+  .marketing-page .profile-title h3 { font-size: 17px; }
+  .marketing-page .profile-stats { flex-wrap: wrap; margin: 13px 0; }
+  .marketing-page .floating-ai-card { padding: 11px; }
+  .marketing-page .floating-ai-card strong { font-size: 11px; }
+  .marketing-page .section-heading h2,
+  .marketing-page .loop-copy h2,
+  .marketing-page .professor-cta h2 { font-size: 39px; }
+  .marketing-page .knowledge-card-stack { display: block; min-height: 0; }
+  .marketing-page .back-card,
+  .marketing-page .mid-card { display: none; }
+  .marketing-page .main-card { position: relative; top: auto; left: auto; width: 100%; padding: 19px; transform: none; }
+  .marketing-page .concept-list p { grid-template-columns: auto minmax(0, 1fr); font-size: 12px; }
+  .marketing-page .concept-list p strong { grid-column: 2; font-size: 11px; }
+  .marketing-page .next-step { grid-template-columns: auto minmax(0, 1fr); }
+  .marketing-page .next-step > svg:last-child { display: none; }
+  .marketing-page .reputation-profile { align-items: flex-start; flex-wrap: wrap; padding: 18px; }
+  .marketing-page .elite-seal { margin-left: 0; }
+  .marketing-page .reputation-metrics div { padding: 21px 8px; }
+  .marketing-page .reputation-metrics strong { font-size: 23px; }
+  .marketing-page .reputation-metrics span { font-size: 10px; text-align: center; }
+  .marketing-page .level-track { padding: 17px 10px 22px; }
+  .marketing-page .level-track span { font-size: 10px; }
+  .marketing-page .earnings-card { padding: 21px 16px; }
+  .marketing-page .next-class { grid-template-columns: auto minmax(0, 1fr); }
+  .marketing-page .next-class button { grid-column: 1 / -1; justify-content: center; width: 100%; }
+  .marketing-page .final-cta-inner > div { gap: 10px; }
+  .marketing-page .final-cta-inner .button { width: 100%; }
+}
+
+/* Persistent product footer for every portal view, including the professor
+   dashboard, without competing with the fixed navigation sidebar. */
+.app-main { display: flex; min-height: 100vh; flex-direction: column; }
+.app-content { flex: 1; }
+@media (max-width: 700px) {
+  .app-main > .site-footer { padding-bottom: 88px; }
+}
+
+/* Tutor dashboard: AI insights need the same presentation scale as the main
+   schedule, so the signal and next action are readable at a glance. */
+.student-insights > div > p strong { font-size: 15px; }
+.student-insights > div > p small { font-size: 13px; line-height: 1.45; }
+.student-insights > div > button { font-size: 13px; }
+.student-insights > div:not(.panel-heading) { gap: 12px; padding-block: 15px; }
+.student-insights .mini-avatar { width: 38px; height: 38px; font-size: 12px; }
+
+/* Interactive tutor availability calendar. */
+.calendar-cells { position: relative; }
+.calendar-slot { min-width: 0; padding: 0; border: 0; border-right: 1px solid #edf0f5; border-bottom: 1px solid #edf0f5; background: transparent; cursor: pointer; }
+.calendar-slot:hover { background: rgba(0,56,125,.05); }
+.calendar-entry-button { width: auto; border: 0; text-align: left; cursor: pointer; transition: box-shadow .18s ease, transform .18s ease; }
+.calendar-entry-button:hover { box-shadow: 0 7px 16px rgba(13,22,65,.13); transform: translateY(-1px); }
+.calendar-notice { display: flex; align-items: center; gap: 8px; margin: -2px 0 12px; padding: 11px 13px; color: #087767; border-radius: 10px; background: #e7f8f4; font-size: 13px; font-weight: 750; }.calendar-notice svg { width: 16px; }.calendar-notice button { display: grid; margin-left: auto; padding: 0; border: 0; background: transparent; cursor: pointer; }.calendar-notice button svg { width: 17px; }
+.calendar-editor-backdrop { position: fixed; z-index: 200; inset: 0; display: grid; padding: 20px; place-items: center; background: rgba(7,14,42,.52); backdrop-filter: blur(5px); }
+.calendar-editor { width: min(500px, 100%); padding: 28px; border-radius: 19px; background: white; box-shadow: 0 28px 75px rgba(6,15,45,.28); }.calendar-editor > header { display: flex; align-items: flex-start; justify-content: space-between; }.calendar-editor h2 { margin: 6px 0 4px; color: var(--navy); font-family: var(--font-playfair), Georgia, serif; font-size: 28px; }.calendar-editor > header > button { display: grid; width: 34px; height: 34px; place-items: center; border: 0; border-radius: 9px; background: var(--cloud); cursor: pointer; }.calendar-editor > header > button svg { width: 18px; }
+.calendar-editor .form-label { font-size: 14px; }.calendar-editor .form-label input, .calendar-editor .form-label select { font-size: 14px; }.calendar-editor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }.calendar-editor footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 25px; }.calendar-editor footer .button { border: 0; }.calendar-delete { display: inline-flex; align-items: center; gap: 7px; padding: 9px 0; color: #a33b3d; border: 0; background: transparent; font-size: 13px; font-weight: 800; cursor: pointer; }.calendar-delete svg { width: 16px; }
+@media (max-width: 620px) { .calendar-editor { padding: 23px 19px; }.calendar-editor-grid { grid-template-columns: 1fr; }.calendar-editor footer { align-items: stretch; flex-direction: column-reverse; }.calendar-editor footer .button { width: 100%; }.calendar-delete { justify-content: center; } }
+
+/* Inbox readability: conversation list and the central secure-channel teaser
+   should be scannable without zooming. */
+.inbox-search input { font-size: 13px; }
+.inbox-layout > aside > button { gap: 10px; padding: 14px; }
+.inbox-layout > aside strong { font-size: 14px; }
+.inbox-layout > aside small { margin-top: 5px; font-size: 12px; }
+.inbox-layout > aside em { font-size: 11px; }
+.inbox-layout > aside .mini-avatar { width: 38px; height: 38px; font-size: 12px; }
+.conversation > header { height: 70px; padding-inline: 18px; }
+.conversation > header strong { font-size: 15px; }
+.conversation > header small { font-size: 12px; }
+.security-notice { padding: 11px 13px; font-size: 12px; line-height: 1.45; }
+.security-notice svg { width: 16px; }
+.bubble p { font-size: 14px; line-height: 1.6; }
+.bubble small { font-size: 11px; }
+
+/* Footer links remain comfortably legible in every layout. */
+.site-footer .footer-grid h4 { font-size: 14px; }
+.site-footer .footer-grid a { font-size: 14px; line-height: 1.45; }
+.site-footer .footer-grid p { font-size: 13px; }
+.site-footer .footer-bottom { font-size: 12px; }
+#search-results-anchor { scroll-margin-top: 18px; }
+
+/* Login: focused, readable and with a clear path for a new account. */
+@media (min-width: 901px) {
+  .login-shell { grid-template-columns: .72fr 1.28fr; }
+  .login-story { padding: 34px 4.5vw 38px; }
+  .login-story h1 { font-size: clamp(40px, 4vw, 56px); }
+  .login-story > div:nth-child(2) > p { font-size: 14px; }
+  .login-form-side { padding: 48px; }
+  .login-card { width: min(520px, 100%); padding: 42px; }
+}
+.login-card h2 { font-size: 36px; }
+.login-card > p { font-size: 15px; line-height: 1.55; }
+.login-card .step-kicker { font-size: 12px; }
+.role-pick strong { font-size: 15px; }.role-pick small { font-size: 12px; line-height: 1.4; }.role-pick button { min-height: 74px; }
+.google-auth-button { min-height: 52px; font-size: 15px; }.google-auth-button > span { width: 27px; height: 27px; font-size: 14px; }
+.auth-divider { margin-top: 20px; font-size: 11px; }.login-card .form-label { font-size: 14px; }.login-card .form-label input { min-height: 50px; font-size: 16px; }.auth-utility { font-size: 13px; }.login-button { min-height: 54px; font-size: 16px; }.login-trust { font-size: 12px; }
+.login-registration { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; padding: 17px; border: 1px solid #dce4f0; border-radius: 13px; background: #f5f8fd; }.login-registration > div { display: flex; flex-direction: column; }.login-registration strong { font-size: 15px; }.login-registration small { max-width: 235px; margin-top: 4px; color: var(--muted); font-size: 12px; line-height: 1.4; }.login-registration a { display: inline-flex; align-items: center; gap: 6px; color: var(--blue); font-size: 14px; font-weight: 850; white-space: nowrap; }.login-registration a svg { width: 16px; }
+.demo-admin { margin-top: 16px; padding-top: 0; border-top: 0; font-size: 12px; }
+@media (max-width: 520px) { .login-form-side { padding: 22px 14px; }.login-card { padding: 27px 20px; }.login-card h2 { font-size: 31px; }.login-registration { align-items: flex-start; flex-direction: column; } }
+
+/* Public chrome around the login journey. */
+.login-page { display: block; min-height: 100vh; background: radial-gradient(circle at 72% 25%, #fff, var(--cloud) 54%); }
+.login-page > .marketing-header { color: white; background: var(--navy); }
+.login-page > .marketing-header .marketing-nav a, .login-page > .marketing-header .text-link { color: rgba(255,255,255,.78); }
+.login-shell { display: grid; grid-template-columns: 1.05fr .95fr; min-height: calc(100vh - 86px); }
+@media (max-width: 900px) { .login-shell { grid-template-columns: 1fr; min-height: auto; }.login-shell .login-story { display: none; } }
+
+/* Refined login composition: a calm proof panel and one unmistakable action. */
+@media (min-width: 901px) {
+  .login-shell { grid-template-columns: minmax(320px, .76fr) minmax(0, 1.24fr); gap: 54px; align-items: start; width: min(1180px, calc(100% - 48px)); min-height: 690px; margin-inline: auto; padding: 54px 0; background: transparent; }
+  .login-story { min-height: 570px; padding: 44px; border-radius: 24px; background: radial-gradient(circle at 88% 20%, rgba(70,102,184,.48), transparent 35%), linear-gradient(135deg, var(--navy), #183675); box-shadow: 0 24px 60px rgba(13,22,65,.16); }
+  .login-form-side { display: block; padding: 0; background: transparent; }
+  .login-story, .login-card { box-sizing: border-box; padding: 44px; }
+  .login-card { width: min(600px, 100%); margin: 0 0 0 auto; border-color: #d9e1ed; border-radius: 22px; box-shadow: 0 24px 65px rgba(13,22,65,.11); }
+}
+.login-story-copy { max-width: 410px; }.login-story h1 { margin-top: 14px; }.login-story > .login-story-copy > p { max-width: 380px; margin: 24px 0 0; color: rgba(255,255,255,.66); font-size: 16px; line-height: 1.7; }
+.login-story-proof { display: grid; gap: 12px; margin: 31px 0 0; padding: 0; list-style: none; }.login-story-proof li { display: flex; align-items: center; gap: 9px; color: rgba(255,255,255,.78); font-size: 14px; font-weight: 650; }.login-story-proof svg { width: 17px; color: var(--mint); }
+.login-quote { margin-top: auto; }.login-card .role-pick { margin-top: 25px; }.login-card .google-auth-button { margin-top: 20px; }.login-card .form-label { margin-top: 18px; }.login-card .password-input { position: relative; }.login-card .password-input input { width: 100%; }.login-card .password-input button { position: absolute; top: 50%; right: 11px; display: grid; padding: 4px; border: 0; background: transparent; transform: translateY(-50%); cursor: pointer; }.login-card .password-input button svg { width: 19px; color: var(--muted); }
+@media (max-width: 900px) { .login-shell { padding: 34px 20px 55px; background: var(--cloud); }.login-form-side { padding: 0; }.login-card { width: min(540px, 100%); padding: 34px; border-radius: 19px; }.login-story-proof { display: none; } }
+
+/* Settings follows the portal shell: blue application header, readable section
+   navigation and no compact legacy labels. */
+.settings-page > header {
+  color: white;
+  border-bottom-color: rgba(255,255,255,.1);
+  background: linear-gradient(125deg, var(--navy), #183675);
+}
+.settings-page > header > a { color: rgba(255,255,255,.78); font-size: 14px; font-weight: 700; }
+.settings-page > header > a svg { width: 18px; }
+.settings-page > main > div:first-child .eyebrow { font-size: 12px; }
+.settings-page h1 { font-size: 42px; }
+.settings-page > main > div:first-child > p { font-size: 15px; }
+.settings-page nav button { min-height: 48px; padding: 12px 14px; font-size: 15px; }
+.settings-page nav button svg { width: 18px; height: 18px; }
+.settings-page section h2 { font-size: 25px; }
+.settings-section-head > span { font-size: 12px; }
+.setting-toggle strong, .connected-account strong, .ai-memory-card strong { font-size: 15px; }
+.setting-toggle small, .connected-account small, .ai-memory-card small,
+.settings-description { font-size: 13px; line-height: 1.5; }
+.privacy-actions button, .settings-footer .button, .logout-button,
+.ai-memory-card a { font-size: 13px; }
+.settings-notice { min-height: 44px; padding: 12px 14px; font-size: 14px; }
+.settings-notice svg { width: 18px; height: 18px; }
+
+/* Contact is a real in-product support journey, not a mailto escape hatch. */
+.contact-hero { min-height: 455px; }
+.contact-main { padding: 82px 0 110px; }
+.contact-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: -126px; position: relative; z-index: 2; }
+.contact-options article { display: flex; gap: 14px; padding: 20px; border: 1px solid #dbe3ef; border-radius: 16px; background: white; box-shadow: 0 13px 32px rgba(13,22,65,.08); }
+.contact-options article > span { display: grid; flex: 0 0 auto; width: 38px; height: 38px; place-items: center; color: var(--blue); border-radius: 11px; background: #eaf1fb; }
+.contact-options article:nth-child(2) > span { color: #9b6500; background: #fff3d9; }.contact-options article:nth-child(3) > span { color: #087767; background: #e4f8f3; }
+.contact-options strong { font-size: 15px; }.contact-options p { margin: 5px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.contact-layout { display: grid; grid-template-columns: .85fr 1.15fr; gap: 86px; align-items: start; margin-top: 75px; }
+.contact-copy h2 { margin: 0; color: var(--navy); font-family: var(--font-playfair), Georgia, serif; font-size: 48px; line-height: 1.04; letter-spacing: -.045em; }.contact-copy > p { max-width: 500px; color: var(--muted); font-size: 16px; line-height: 1.75; }
+.contact-direct { display: flex; gap: 11px; margin: 26px 0; padding: 16px; border-radius: 13px; background: var(--cream); }.contact-direct > svg { flex: 0 0 auto; color: var(--coral); }.contact-direct span { display: flex; flex-direction: column; }.contact-direct strong { font-size: 14px; }.contact-direct small { margin-top: 4px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+.contact-copy > a { display: inline-flex; align-items: center; gap: 7px; color: var(--blue); font-size: 14px; font-weight: 800; }.contact-copy > a svg { width: 17px; }
+.contact-card { padding: 32px; border: 1px solid #dde3ed; border-radius: 20px; background: white; box-shadow: 0 24px 55px rgba(13,22,65,.1); }.contact-card-head { display: flex; align-items: flex-start; justify-content: space-between; }.contact-card-head h2 { margin: 6px 0 8px; font-family: var(--font-playfair), Georgia, serif; font-size: 30px; }.contact-card-head > svg { color: var(--blue); }
+.contact-topic { margin: 19px 0 0; padding: 0; border: 0; }.contact-topic legend { margin-bottom: 9px; font-size: 14px; font-weight: 800; }.contact-topic > div { display: flex; flex-wrap: wrap; gap: 7px; }.contact-topic button { padding: 8px 10px; color: var(--muted); border: 1px solid #dce2ec; border-radius: 99px; background: white; font-size: 12px; font-weight: 700; cursor: pointer; }.contact-topic button.selected { color: var(--blue); border-color: #b7cae5; background: #eaf1fb; }
+.contact-submit { width: 100%; margin-top: 24px; border: 0; }.contact-privacy { display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 13px; color: var(--muted); font-size: 11px; }.contact-privacy svg { width: 14px; color: var(--mint); }
+.contact-success { display: flex; min-height: 470px; align-items: center; flex-direction: column; justify-content: center; text-align: center; }.contact-success > svg { width: 52px; height: 52px; color: var(--mint); }.contact-success h2 { margin: 10px 0; font-family: var(--font-playfair), Georgia, serif; font-size: 32px; }.contact-success p { max-width: 390px; color: var(--muted); font-size: 14px; line-height: 1.6; }.contact-success .button { margin-top: 12px; }
+@media (max-width: 900px) { .contact-options, .contact-layout { grid-template-columns: 1fr; }.contact-layout { gap: 38px; margin-top: 52px; }.contact-options { margin-top: -96px; } }
+@media (max-width: 620px) { .contact-main { padding-bottom: 65px; }.contact-options { margin-top: -70px; }.contact-card { padding: 24px 19px; }.contact-copy h2 { font-size: 40px; } }
+
+/* Tutor detail is a guided booking surface, with the same deliberate card
+   rhythm as the rest of the product rather than a plain document layout. */
+.profile-page .profile-layout { gap: 30px; padding-top: 28px; }
+.profile-page .profile-intro-card { border-color: #dbe2ef; box-shadow: 0 16px 38px rgba(13,22,65,.06); }
+.profile-page .profile-tabs {
+  top: 12px;
+  gap: 8px;
+  margin-top: 22px;
+  padding: 8px;
+  border: 1px solid #e0e5ee;
+  border-radius: 14px;
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 9px 25px rgba(13,22,65,.06);
+  backdrop-filter: blur(12px);
+}
+.profile-page .profile-tabs a { padding: 10px 13px; border: 0; border-radius: 9px; }
+.profile-page .profile-tabs a.active { color: var(--blue); background: #eaf1fb; }
+.profile-page .profile-section { scroll-margin-top: 92px; }
+@media (max-width: 700px) {
+  .profile-page .profile-tabs { gap: 4px; overflow-x: auto; }
+  .profile-page .profile-tabs a { flex: 0 0 auto; padding-inline: 11px; }
 }

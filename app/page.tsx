@@ -5,6 +5,7 @@ import {
   Star, TrendingUp, Video,
 } from "lucide-react";
 import { MarketingHeader } from "./components/MarketingHeader";
+import { SiteFooter } from "./components/SiteFooter";
 import { TutorCard } from "./components/TutorCard";
 import { tutors } from "./data";
 import { DEFAULT_EDUCATION_LEVEL_ID, EDUCATION_LEVELS, SUBJECT_CATALOG } from "./lib/catalog";
@@ -22,6 +23,7 @@ export default function Home() {
             <h1>Svaki sat postaje<br /><em>znanje koje ostaje.</em></h1>
             <p>Pronađi provjerenog profesora, rezerviraj termin i nastavi učiti uz osobnog AI mentora koji poznaje tvoj napredak.</p>
             <form className="hero-search" action="/pronadi-profesora">
+              <input type="hidden" name="focus" value="results" />
               <label><span>Što želiš naučiti?</span><select name="subject" defaultValue="matematika" aria-label="Odaberi predmet">{SUBJECT_CATALOG.map((subject) => <option value={subject.slug} key={subject.id}>{subject.name}</option>)}</select></label>
               <label><span>Razina</span><select name="level" defaultValue={DEFAULT_EDUCATION_LEVEL_ID} aria-label="Odaberi razinu">{EDUCATION_LEVELS.map((level) => <option value={level.id} key={level.id}>{level.label}</option>)}</select></label>
               <button aria-label="Pronađi profesora" type="submit">Pronađi mentora <ArrowRight size={18} /></button>
@@ -155,15 +157,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="site-footer">
-        <div className="container footer-grid">
-          <div><strong>GAUDEAMUS <em>MENTOR</em></strong><p>Učenje koje ostaje.</p></div>
-          <div><h4>Učenici</h4><Link href="/pronadi-profesora">Pronađi profesora</Link><Link href="/kako-radi">Kako radi</Link><Link href="/ucenik/ai-mentor">AI Mentor</Link></div>
-          <div><h4>Profesori</h4><Link href="/za-profesore">Postani mentor</Link><Link href="/profesor">Profesorski portal</Link><Link href="/sigurnost">Standardi kvalitete</Link></div>
-          <div><h4>Platforma</h4><Link href="/investitori">Vizija i model</Link><Link href="/sigurnost">Sigurnost</Link><a href="mailto:mentor@gaudeamus.hr">Kontakt</a></div>
-        </div>
-        <div className="container footer-bottom"><span>© 2026 Gaudeamus Mentor. Konceptualni prototip.</span><span>Osijek · Hrvatska</span></div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

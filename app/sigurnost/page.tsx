@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MarketingHeader } from "../components/MarketingHeader";
+import { SiteFooter } from "../components/SiteFooter";
 import {
   ArrowRight,
   BadgeCheck,
@@ -68,6 +69,7 @@ export default function TrustPage() {
           </div>
         </section>
       </main>
+      <SiteFooter />
     </div>
   );
 }

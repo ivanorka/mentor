@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { MarketingHeader } from "../components/MarketingHeader";
+import { SiteFooter } from "../components/SiteFooter";
 import {
   ArrowRight, BarChart3, BrainCircuit, CircleDollarSign, Database,
   Network, Sparkles, TrendingUp, Users,
@@ -127,6 +128,7 @@ export default function InvestorsPage() {
           <div className="container"><div><Sparkles /><span><small>PRVI CILJ</small><strong>300 kvalitetnih mentora · 10.000 sati mjesečno</strong></span></div><div><Link href="/admin">Pregledaj operativni model <ArrowRight /></Link><Link href="/pronadi-profesora">Isprobaj marketplace</Link></div></div>
         </section>
       </main>
+      <SiteFooter />
     </div>
   );
 }

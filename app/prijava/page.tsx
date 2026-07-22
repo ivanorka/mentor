@@ -4,7 +4,8 @@ import { FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, BookOpen, Check, Eye, EyeOff, GraduationCap, LoaderCircle, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
-import { Brand } from "../components/Brand";
+import { MarketingHeader } from "../components/MarketingHeader";
+import { SiteFooter } from "../components/SiteFooter";
 import { apiFetch, isStandaloneDemo } from "../lib/api";
 import { saveDemoIdentity } from "../lib/demo";
 
@@ -55,9 +56,9 @@ function LoginContent() {
     window.location.href = `/auth/google-demo?returnTo=${encodeURIComponent(returnTo)}&role=${role}`;
   };
 
-  return <div className="login-page">
-    <section className="login-story"><Brand inverse /><div><span className="eyebrow eyebrow-light"><span /> Učenje koje ostaje</span><h1>Dobrodošao natrag<br />u svoj prostor za <em>rast.</em></h1><p>Svaki sat, bilješka i mali pomak na jednom mjestu.</p></div><div className="login-quote"><Sparkles /><p>“Napredak postaje stvaran kada ga možeš vidjeti.”</p><span>Gaudeamus Mentor</span></div></section>
-    <section className="login-form-side"><form className="login-card" onSubmit={submit}><div className="mobile-brand"><Brand /></div><span className="step-kicker">SIGURNA PRIJAVA</span><h2>Nastavi gdje si stao</h2><p>Prijavi se postojećim računom ili nastavi uz Google.</p>
+  return <div className="login-page"><MarketingHeader inverse /><div className="login-shell">
+    <section className="login-story"><div className="login-story-copy"><span className="eyebrow eyebrow-light"><span /> Tvoj prostor za napredak</span><h1>Uči s više<br /><em>sigurnosti.</em></h1><p>Sati, materijali i AI podrška ostaju povezani — tako svaki sljedeći korak ima smisla.</p><ul className="login-story-proof"><li><Check /> Provjereni mentori i sigurna rezervacija</li><li><Check /> AI sažetak nakon svakog sata</li><li><Check /> Jedan jasan pregled napretka</li></ul></div><div className="login-quote"><Sparkles /><p>“Napredak postaje stvaran kada ga možeš vidjeti.”</p><span>Gaudeamus Mentor</span></div></section>
+    <section className="login-form-side"><form className="login-card" onSubmit={submit}><span className="step-kicker">SIGURNA PRIJAVA</span><h2>Nastavi gdje si stao</h2><p>Prijavi se postojećim računom ili nastavi uz Google.</p>
       <div className="role-pick"><button type="button" className={role === "student" ? "selected" : ""} onClick={() => chooseRole("student")}><BookOpen /><span><strong>Učenik</strong><small>Učenje, sati i AI Mentor</small></span>{role === "student" && <Check />}</button><button type="button" className={role === "tutor" ? "selected" : ""} onClick={() => chooseRole("tutor")}><GraduationCap /><span><strong>Profesor</strong><small>Kalendar, učenici i zarada</small></span>{role === "tutor" && <Check />}</button></div>
       <button type="button" className="google-auth-button" onClick={googleLogin}><span>G</span>Nastavi s Google računom</button><div className="auth-divider"><span>ili e-mailom</span></div>
       <label className="form-label">E-mail adresa<input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
@@ -66,9 +67,10 @@ function LoginContent() {
       {error && <div className="auth-error"><LockKeyhole /> {error}</div>}
       <button type="submit" disabled={loading} className="button button-coral login-button">{loading ? <LoaderCircle className="spin" /> : <>Prijavi se <ArrowRight /></>}</button>
       <div className="login-trust"><ShieldCheck /> HttpOnly session · lozinka je zaštićena bcryptom</div>
-      <span className="demo-admin">Nemaš račun? <Link href={`/registracija?role=${role}`}>Kreiraj besplatan račun</Link><br />Investitorski demo? <Link href="/admin">Otvori operativni pregled</Link></span>
+      <div className="login-registration"><div><strong>Nemaš račun?</strong><small>Kreiraj besplatan profil i pronađi mentora u nekoliko koraka.</small></div><Link href={`/registracija?role=${role}`}>Kreiraj račun <ArrowRight /></Link></div>
+      <span className="demo-admin">Investitorski demo? <Link href="/admin">Otvori operativni pregled</Link></span>
     </form></section>
-  </div>;
+  </div><SiteFooter /></div>;
 }
 
 export default function LoginPage() {

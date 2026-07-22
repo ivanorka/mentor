@@ -1,11 +1,12 @@
 import Link from "next/link";
 import {
   BarChart3, BookOpen, Bot, CalendarDays, CircleDollarSign,
-  Compass, Database, Headphones, LayoutDashboard, MessageCircle, Search, Settings,
+  Compass, Database, Headphones, LayoutDashboard, MessageCircle, Search,
   ShieldCheck, Sparkles, Users, Video,
 } from "lucide-react";
 import { Brand } from "./Brand";
 import { SessionControls, SidebarProfile } from "./SessionControls";
+import { SiteFooter } from "./SiteFooter";
 
 type Role = "student" | "tutor" | "admin";
 
@@ -60,7 +61,6 @@ export function AppShell({ role, active, title, eyebrow, children, action }: {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <Link href="/postavke"><Settings size={18} /> Postavke</Link>
           <SidebarProfile role={role} />
         </div>
       </aside>
@@ -70,6 +70,7 @@ export function AppShell({ role, active, title, eyebrow, children, action }: {
           <div className="app-top-actions">{action}<SessionControls role={role} /></div>
         </header>
         <div className="app-content">{children}</div>
+        <SiteFooter />
       </main>
     </div>
   );
