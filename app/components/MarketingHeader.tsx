@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronDown, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Brand } from "./Brand";
 
 export function MarketingHeader({ inverse = false }: { inverse?: boolean }) {
@@ -12,7 +12,7 @@ export function MarketingHeader({ inverse = false }: { inverse?: boolean }) {
           <Link href="/predmeti">Predmeti</Link>
           <Link href="/kako-radi">Kako radi</Link>
           <Link href="/za-profesore">Za profesore</Link>
-          <Link href="/sigurnost">Povjerenje <ChevronDown size={14} /></Link>
+          <Link href="/sigurnost">Povjerenje</Link>
         </nav>
         <div className="header-actions">
           <Link className="text-link" href="/prijava">Prijava</Link>

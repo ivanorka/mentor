@@ -2152,3 +2152,15 @@ h1 em, h2 em { color: var(--coral); font-weight: inherit; }
   .search-layout { padding-top: 22px; }
   .filters-panel { max-height: 86dvh; }
 }
+
+/* Discovery now shares the same desktop opening rhythm as the information
+   pages: one header treatment, one hero scale, and no redundant back link. */
+@media (min-width: 981px) {
+  .search-page .marketing-header { height: 86px; min-height: 86px; }
+  .search-page .search-hero {
+    padding: 180px 0 76px;
+    background: radial-gradient(circle at 78% 35%, rgba(70,102,184,.45), transparent 32%), var(--navy);
+  }
+  .search-page .search-title-row { margin-top: 0; }
+  .search-page .search-title-row h1 { font-size: clamp(52px, 7vw, 80px); line-height: .98; }
+}

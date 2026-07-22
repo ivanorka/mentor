@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ChevronRight, MapPin, Search, SlidersHorizontal, Sparkles, Star, X } from "lucide-react";
+import { ChevronRight, MapPin, Search, SlidersHorizontal, Sparkles, Star, X } from "lucide-react";
 import { MarketingHeader } from "../components/MarketingHeader";
 import { TutorCard } from "../components/TutorCard";
 import { tutors, type Tutor } from "../data";
@@ -221,7 +221,6 @@ export default function TutorSearchPage() {
       <MarketingHeader inverse />
       <div className="search-hero">
         <div className="container">
-          <Link className="back-link" href="/"><ArrowLeft size={16} /> Natrag na početnu</Link>
           <div className="search-title-row">
             <div><div className="eyebrow"><span /> Provjereni Gaudeamus mentori · {apiState === "live" ? "API uživo" : apiState === "loading" ? "učitavanje" : "demo način"}</div><h1>Pronađi osobu koja će<br /><em>otključati tvoje znanje.</em></h1></div>
             <div className="search-promise"><Sparkles /><span><strong>{matchContext.enabled ? "Tvoj Mentor Match je spreman" : "Pametno podudaranje"}</strong><small>{matchContext.enabled ? "Svaki rezultat ima izračun i jasne razloge preporuke." : "Rangiramo mentore prema tvojoj razini, cilju i načinu učenja."}</small></span></div>
