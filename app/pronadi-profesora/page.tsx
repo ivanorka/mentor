@@ -218,7 +218,7 @@ export default function TutorSearchPage() {
 
   return (
     <div className="search-page">
-      <MarketingHeader />
+      <MarketingHeader inverse />
       <div className="search-hero">
         <div className="container">
           <Link className="back-link" href="/"><ArrowLeft size={16} /> Natrag na početnu</Link>
@@ -235,6 +235,7 @@ export default function TutorSearchPage() {
       </div>
       <div className="container search-layout">
         <button className="mobile-filter-trigger" onClick={() => setFiltersOpen(!filtersOpen)}><SlidersHorizontal /> Filteri {activeCount > 0 && <span>{activeCount}</span>}</button>
+        {filtersOpen && <button className="filter-backdrop" aria-label="Zatvori filtre" onClick={() => setFiltersOpen(false)} />}
         <aside className={`filters-panel ${filtersOpen ? "open" : ""}`}>
           <div className="filter-head"><strong>Filteri {activeCount > 0 && <em>{activeCount}</em>}</strong><button onClick={() => setFiltersOpen(false)} aria-label="Zatvori filtre"><X size={17} /></button></div>
           <div className="filter-block"><label>Predmet</label><select value={subject} onChange={(event) => setSubject(event.target.value)}><option value="svi">Svi predmeti</option>{subjects.map((item) => <option value={item.slug} key={item.id}>{item.name}</option>)}</select></div>

@@ -98,7 +98,7 @@ export default function SubjectsPage() {
 
   return (
     <div className="subjects-page">
-      <MarketingHeader />
+      <MarketingHeader inverse />
       <section className="subjects-hero">
         <div className="container subjects-hero-inner">
           <div><span className="api-live-pill"><i className={live ? "online" : "offline"} /> {live ? "Podaci uživo iz Go API-ja" : "Demo podaci"}</span><h1>Predmeti za svaki<br /><em>sljedeći korak.</em></h1><p>Od prve nejasne lekcije do mature i fakulteta — pronađi mentora koji poznaje tvoju razinu, cilj i način učenja.</p></div>
