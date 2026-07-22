@@ -1,5 +1,7 @@
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8081/api/v1";
+const configuredApiUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+const isLocalBrowser = typeof window !== "undefined" && ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+
+export const API_BASE_URL = configuredApiUrl ?? (isLocalBrowser ? "http://localhost:8081/api/v1" : "/api/v1");
 
 /** The hosted prototype has no public Go runtime; use its embedded demo flows immediately. */
 export function isStandaloneDemo() {

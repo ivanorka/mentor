@@ -43,6 +43,11 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+/.netlify/
+/deno.lock
 /backend/data/runtime.snapshot.json
 /backend/data/auth.runtime.json
 /backend/data/*.tmp
+
+# Local Netlify folder
+.netlify

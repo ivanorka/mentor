@@ -32,7 +32,7 @@ Demo prijava koristi lozinku `Gaudeamus2026!`:
 - učenik: `luka.petrovic@example.test`
 - profesor: `ana.kovac@example.test`
 
-Registracija, prijava, odjava, obnova lozinke i Google SSO ulaz dostupni su na `/registracija` i `/prijava`. Bez Google ključeva lokalni prototip jasno prikazuje sigurni odabir seed identiteta; s ključevima backend koristi standardni OAuth 2.0 authorization-code tok.
+Registracija, prijava, odjava, obnova lozinke i Google SSO ulaz dostupni su na `/registracija` i `/prijava`. Google ulaz koristi standardni OAuth 2.0 authorization-code tok kada su dodani OAuth podaci; bez njih aplikacija jasno prijavljuje da SSO još nije konfiguriran.
 
 ## Produktni prostori
 
@@ -65,11 +65,14 @@ Novi seed katalog pri pokretanju se sigurno spaja s runtime snapshotom: nove pre
 - `npm run build:vinext` zadržava Vinext/Cloudflare Sites build u `dist` direktoriju.
 - `npm run dev` pokreće standardni Next.js razvojni server; `npm run dev:vinext` ostaje dostupan za Sites razvoj.
 
+Za Netlify + Neon deployment, API živi u `netlify/functions/api.mjs`, a `/api/v1/*` je usmjeren na tu funkciju. Scheduled heartbeat svakih pet minuta prati dostupnost Neon veze i latenciju; ne može garantirati trajno toplu serverless instancu. Detaljan postupak je u [`docs/NETLIFY_API.md`](docs/NETLIFY_API.md).
+
 ## Dokumentacija
 
 - [`backend/README.md`](backend/README.md) — domenski model, poslovna pravila, demo auth, persistence i produkcijski put
 - [`backend/docs/openapi.yaml`](backend/docs/openapi.yaml) — REST ugovor
 - [`backend/data/seed.json`](backend/data/seed.json) — reproducibilni demo dataset
+- [`docs/NETLIFY_API.md`](docs/NETLIFY_API.md) — Netlify API, Neon varijable i heartbeat
 
 ## Provjera
 

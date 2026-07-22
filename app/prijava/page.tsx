@@ -6,54 +6,40 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, BookOpen, Check, Eye, EyeOff, GraduationCap, LoaderCircle, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import { MarketingHeader } from "../components/MarketingHeader";
 import { SiteFooter } from "../components/SiteFooter";
-import { apiFetch, isStandaloneDemo } from "../lib/api";
-import { saveDemoIdentity } from "../lib/demo";
+import { API_BASE_URL, apiFetch } from "../lib/api";
 
 type AuthResult = { user: { name: string; role: string }; dashboard: string; expiresAt: string };
-
-const demoAccounts = {
-  student: { email: "luka.petrovic@example.test", password: "Gaudeamus2026!" },
-  tutor: { email: "ana.kovac@example.test", password: "Gaudeamus2026!" },
-};
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedRole = searchParams.get("role") === "tutor" ? "tutor" : "student";
   const [role, setRole] = useState<"student" | "tutor">(requestedRole);
-  const [email, setEmail] = useState(demoAccounts[requestedRole].email);
-  const [password, setPassword] = useState(demoAccounts[requestedRole].password);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(searchParams.get("error") === "google" ? "Google prijava nije dovršena. Pokušaj ponovno." : "");
 
   const chooseRole = (nextRole: "student" | "tutor") => {
-    setRole(nextRole); setEmail(demoAccounts[nextRole].email); setPassword(demoAccounts[nextRole].password); setError("");
+    setRole(nextRole); setError("");
   };
 
   const submit = async (event: FormEvent) => {
     event.preventDefault(); setLoading(true); setError("");
     const returnTo = new URLSearchParams(window.location.search).get("returnTo");
-    if (isStandaloneDemo()) {
-      const session = saveDemoIdentity(email, role);
-      router.push(returnTo?.startsWith("/") && !returnTo.startsWith("//") ? returnTo : session.dashboard);
-      return;
-    }
     try {
       const { data } = await apiFetch<AuthResult>("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
       router.push(returnTo?.startsWith("/") && !returnTo.startsWith("//") ? returnTo : data.dashboard);
-    } catch {
-      // The hosted investor demo deliberately remains usable when the optional Go API is not running.
-      const session = saveDemoIdentity(email, role);
-      router.push(returnTo?.startsWith("/") && !returnTo.startsWith("//") ? returnTo : session.dashboard);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Prijava nije uspjela. Pokušaj ponovno.");
     }
     finally { setLoading(false); }
   };
 
   const googleLogin = () => {
     const returnTo = new URLSearchParams(window.location.search).get("returnTo") ?? (role === "tutor" ? "/profesor" : "/ucenik");
-    // Go through the built-in account picker first: it works both with the local API and on a static demo deployment.
-    window.location.href = `/auth/google-demo?returnTo=${encodeURIComponent(returnTo)}&role=${role}`;
+    window.location.href = `${API_BASE_URL}/auth/google/start?returnTo=${encodeURIComponent(returnTo)}&role=${role}`;
   };
 
   return <div className="login-page"><MarketingHeader inverse /><div className="login-shell">
@@ -68,7 +54,6 @@ function LoginContent() {
       <button type="submit" disabled={loading} className="button button-coral login-button">{loading ? <LoaderCircle className="spin" /> : <>Prijavi se <ArrowRight /></>}</button>
       <div className="login-trust"><ShieldCheck /> HttpOnly session · lozinka je zaštićena bcryptom</div>
       <div className="login-registration"><div><strong>Nemaš račun?</strong><small>Kreiraj besplatan profil i pronađi mentora u nekoliko koraka.</small></div><Link href={`/registracija?role=${role}`}>Kreiraj račun <ArrowRight /></Link></div>
-      <span className="demo-admin">Investitorski demo? <Link href="/admin">Otvori operativni pregled</Link></span>
     </form></section>
   </div><SiteFooter /></div>;
 }

@@ -28,8 +28,8 @@ const navByRole = {
     ["/profesor/poruke", "Poruke", MessageCircle],
   ],
   admin: [
+    ["/superdmin/upravljanje", "Korisnici", Users],
     ["/admin", "Command center", Compass],
-    ["/admin/korisnici", "Korisnici", Users],
     ["/admin/sati", "Sati i kvaliteta", Video],
     ["/admin/financije", "Financije", BarChart3],
     ["/admin/sigurnost", "Trust & safety", ShieldCheck],
